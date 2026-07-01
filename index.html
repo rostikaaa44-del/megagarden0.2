@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌱 Сад-Кликер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            background: linear-gradient(145deg, #0f1f0f, #1e3a1e);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            padding: 10px;
+        }
+        .game {
+            background: #2d5a2d;
+            border-radius: 40px;
+            padding: 18px;
+            max-width: 440px;
+            width: 100%;
+            border: 3px solid #4d8a4d;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            min-height: 620px;
+        }
+
+        /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
+            background: #1f3f1f;
+            padding: 8px 10px;
+            border-radius: 28px;
+            margin-bottom: 10px;
+            border: 2px solid #4d7a4d;
+            flex-shrink: 0;
+        }
+        .stat-item {
+            color: #e8f5d0;
+            font-weight: bold;
+            font-size: 11px;
+            text-align: center;
+        }
+        .stat-item span {
+            color: #ffd700;
+            font-size: 15px;
+            display: block;
+        }
+
+        /* ===== ЦЕНТРАЛЬНАЯ ОБЛАСТЬ (кнопка по центру) ===== */
+        .center-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px;
+            padding: 10px 0;
+        }
+
+        /* ===== ИДЕАЛЬНО КРУГЛАЯ КНОПКА ПО ЦЕНТРУ ===== */
+        .click-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #6ab04a, #1f4a1f);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 4px solid #8fc98f;
+            box-shadow: 0 8px 0 #0f2a0f, 0 12px 30px rgba(0,0,0,0.6);
+            transition: all 0.08s ease;
+            user-select: none;
+            position: relative;
+        }
+        .click-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #0f2a0f, 0 8px 20px rgba(0,0,0,0.5);
+        }
+        .click-emoji {
+            font-size: 76px;
+            line-height: 1;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            transition: transform 0.1s;
+        }
+        .click-btn:active .click-emoji {
+            transform: scale(0.8);
+        }
+        .click-hint {
+            color: #d4ecd4;
+            font-size: 13px;
+            margin-top: 2px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* ===== ВСПЛЫВАЮЩИЕ ЦИФРЫ ===== */
+        .click-float {
+            position: fixed;
+            font-weight: bold;
+            font-size: 28px;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffa500, 0 0 40px #ff6600;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 999;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-120px) scale(1.5); }
+        }
+
+        /* ===== НИЖНЯЯ ЧАСТЬ (все кнопки тут) ===== */
+        .bottom-section {
+            flex-shrink: 0;
+            margin-top: 6px;
+        }
+
+        .tab-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 6px 0 8px 0;
+        }
+        .tab-btn {
+            background: #1f3f1f;
+            color: #8aaa8a;
+            border: 2px solid #3d6a3d;
+            padding: 8px 0;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: all 0.12s;
+        }
+        .tab-btn.active {
+            background: #3d7a3d;
+            color: #f0f7d0;
+            border-color: #6fbf6f;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .shop {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            margin: 6px 0;
+        }
+        .shop-btn {
+            background: #1f4a1f;
+            color: #e8f5d0;
+            border: 2px solid #4d8a4d;
+            padding: 6px 4px;
+            border-radius: 18px;
+            font-weight: bold;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.12s;
+            text-align: center;
+            line-height: 1.2;
+        }
+        .shop-btn:active {
+            transform: scale(0.92);
+            background: #123012;
+        }
+        .shop-btn.disabled {
+            opacity: 0.4;
+            filter: grayscale(0.7);
+            pointer-events: none;
+        }
+        .shop-btn .price {
+            color: #ffd700;
+            display: block;
+            font-size: 9px;
+        }
+        .shop-btn .owned {
+            color: #7fbf7f;
+            display: block;
+            font-size: 8px;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            margin-top: 6px;
+        }
+        .action-btn {
+            background: #8f7a3a;
+            color: #1e2a1e;
+            border: none;
+            padding: 8px 0;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 10px;
+            cursor: pointer;
+            border: 2px solid #c4a84a;
+            transition: all 0.12s;
+        }
+        .action-btn:active {
+            transform: scale(0.92);
+            background: #6f5f2a;
+        }
+        .action-btn.danger {
+            background: #7a3a3a;
+            border-color: #aa5a5a;
+            color: #f0d0d0;
+        }
+        .action-btn.danger:active {
+            background: #5a2a2a;
+        }
+        .action-btn.gold {
+            background: #c49a3a;
+            border-color: #eac464;
+        }
+
+        .seed-list {
+            background: #1a3a1a;
+            border-radius: 16px;
+            padding: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin-top: 6px;
+            border: 2px solid #3d6a3d;
+        }
+        .seed-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .seed-list::-webkit-scrollbar-thumb {
+            background: #4d8a4d;
+            border-radius: 8px;
+        }
+        .seed-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 6px;
+            color: #cde0cd;
+            font-size: 10px;
+            border-bottom: 1px solid #2a4a2a;
+        }
+        .seed-item .sname { color: #ffd700; }
+        .seed-item .sprice { color: #7fbf7f; }
+        .seed-item .sincome { color: #6fcfcf; }
+
+        .footer {
+            color: #8aaa8a;
+            text-align: center;
+            font-size: 10px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game">
+        <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+        <div class="stats">
+            <div class="stat-item">💰 <span id="money">0</span></div>
+            <div class="stat-item">🌱 <span id="seeds">0</span></div>
+            <div class="stat-item">⚡ <span id="cps">0</span></div>
+        </div>
+
+        <!-- ===== ЦЕНТР: КРУГЛАЯ КНОПКА ===== -->
+        <div class="center-area">
+            <div class="click-btn" id="clickBtn">
+                <div class="click-emoji">🌻</div>
+                <div class="click-hint">👆 Тапай!</div>
+            </div>
+        </div>
+
+        <!-- ===== НИЖНЯЯ ЧАСТЬ (все остальные кнопки) ===== -->
+        <div class="bottom-section">
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="shop">🏪 Магазин</button>
+                <button class="tab-btn" data-tab="seeds">🌱 Семена</button>
+            </div>
+
+            <div class="tab-content active" id="tab-shop">
+                <div class="shop" id="shopContainer"></div>
+                <div class="actions">
+                    <button class="action-btn gold" id="prestigeBtn">✨ Перерождение</button>
+                    <button class="action-btn" id="autoClickBtn">🤖 Автокликер</button>
+                    <button class="action-btn danger" id="resetBtn">🔄 Сброс</button>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-seeds">
+                <div class="seed-list" id="seedList"></div>
+            </div>
+
+            <div class="footer" id="achievementDisplay">🏅 Достижения: 0</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  ИГРА "ВЫРАСТИ САД" - КРУГЛАЯ КНОПКА ПО ЦЕНТРУ
+        // ============================================================
+
+        let state = {
+            money: 0,
+            seeds: 0,
+            prestigeLevel: 0,
+            prestigeBonus: 1,
+            autoClickers: 0,
+            autoClickLevel: 1,
+            totalClicks: 0,
+            totalMoneyEarned: 0,
+            achievements: [],
+            seedInventory: {},
+            clickMultiplier: 1,
+            goldenSeedChance: 0,
+        };
+
+        // ---- ГЕНЕРАЦИЯ 80 СЕМЯН ----
+        function generateSeeds() {
+            const seeds = [];
+            const names = [
+                'Помидор', 'Огурец', 'Морковь', 'Картофель', 'Лук', 'Чеснок', 'Капуста', 'Свекла',
+                'Репа', 'Редис', 'Тыква', 'Кабачок', 'Баклажан', 'Перец', 'Горох', 'Фасоль',
+                'Кукуруза', 'Пшеница', 'Рожь', 'Овес', 'Гречиха', 'Рис', 'Ячмень', 'Просо',
+                'Подсолнух', 'Клубника', 'Малина', 'Смородина', 'Крыжовник', 'Ежевика', 'Голубика', 'Брусника',
+                'Арбуз', 'Дыня', 'Абрикос', 'Персик', 'Слива', 'Вишня', 'Черешня', 'Груша',
+                'Яблоня', 'Айва', 'Гранат', 'Инжир', 'Финик', 'Банан', 'Манго', 'Ананас',
+                'Папайя', 'Гуава', 'Маракуйя', 'Киви', 'Личи', 'Рамбутан', 'Дуриан', 'Джекфрут',
+                'Кокос', 'Миндаль', 'Фисташка', 'Кешью', 'Грецкий', 'Фундук', 'Каштан', 'Пекан',
+                'Арахис', 'Бобы', 'Чечевица', 'Нут', 'Соя', 'Кунжут', 'Лен', 'Чиа',
+                'Базилик', 'Укроп', 'Петрушка', 'Кинза', 'Мята', 'Розмарин', 'Тимьян', 'Орегано'
+            ];
+            let basePrice = 5;
+            for (let i = 0; i < 80; i++) {
+                const tier = Math.floor(i / 10) + 1;
+                seeds.push({
+                    id: i,
+                    name: names[i % names.length] + (i >= names.length ? ` ${Math.floor(i/names.length)+1}` : ''),
+                    basePrice: Math.floor(basePrice * (1.3 + (tier * 0.15))),
+                    income: Math.round((0.1 + Math.random() * 0.3) * (0.5 + tier * 0.3) * 10) / 10,
+                    tier: tier,
+                    emoji: ['🌱','🍅','🥒','🥕','🥔','🧅','🧄','🥬','🌿','🌻','🍓','🍉','🍇','🍊','🍑','🥭','🍍','🥝','🍒','🍎'][i % 20] || '🌿'
+                });
+                basePrice *= 1.08 + (i / 200);
+            }
+            return seeds;
+        }
+        const ALL_SEEDS = generateSeeds();
+
+        // ---- ЦЕНА СЕМЕНИ (с ростом +300%) ----
+        function getSeedPrice(seedId) {
+            const seed = ALL_SEEDS[seedId];
+            const owned = state.seedInventory[seedId] || 0;
+            return Math.floor(seed.basePrice * (1 + owned * 3.0));
+        }
+
+        // ---- ДОСТИЖЕНИЯ ----
+        const ACHIEVEMENTS = [
+            { id: 'first_click', name: 'Первый шаг', desc: 'Сделать 1 клик', check: () => state.totalClicks >= 1 },
+            { id: 'click_100', name: 'Трудяга', desc: 'Сделать 100 кликов', check: () => state.totalClicks >= 100 },
+            { id: 'click_1000', name: 'Кликер-мастер', desc: 'Сделать 1000 кликов', check: () => state.totalClicks >= 1000 },
+            { id: 'money_100', name: 'Первые деньги', desc: 'Заработать 100💰', check: () => state.totalMoneyEarned >= 100 },
+            { id: 'money_1000', name: 'Инвестор', desc: 'Заработать 1000💰', check: () => state.totalMoneyEarned >= 1000 },
+            { id: 'money_10000', name: 'Магнат', desc: 'Заработать 10000💰', check: () => state.totalMoneyEarned >= 10000 },
+            { id: 'seeds_10', name: 'Садовод', desc: 'Купить 10 семян', check: () => Object.values(state.seedInventory).reduce((a,b)=>a+b,0) >= 10 },
+            { id: 'seeds_50', name: 'Агроном', desc: 'Купить 50 семян', check: () => Object.values(state.seedInventory).reduce((a,b)=>a+b,0) >= 50 },
+            { id: 'prestige_1', name: 'Возрождение', desc: 'Сделать 1 перерождение', check: () => state.prestigeLevel >= 1 },
+            { id: 'prestige_5', name: 'Философ', desc: 'Сделать 5 перерождений', check: () => state.prestigeLevel >= 5 },
+            { id: 'auto_10', name: 'Автоматизация', desc: 'Купить 10 автокликеров', check: () => state.autoClickers >= 10 },
+        ];
+
+        // ---- КЛИК ПО КРУГЛОЙ КНОПКЕ ----
+        function clickHandler(event) {
+            const gain = 0.5 * state.clickMultiplier * state.prestigeBonus;
+            state.money += gain;
+            state.totalClicks++;
+            state.totalMoneyEarned += gain;
+
+            const x = event.clientX || window.innerWidth/2;
+            const y = event.clientY || window.innerHeight/2;
+            showFloatingText(x, y, `+${gain.toFixed(1)}💰`);
+
+            // Золотой клик (5% шанс)
+            if (Math.random() < 0.05 + state.goldenSeedChance) {
+                const bonus = gain * 3;
+                state.money += bonus;
+                showFloatingText(x + 40, y - 30, `✨+${bonus.toFixed(1)}✨`);
+            }
+
+            updateUI();
+            checkAchievements();
+            saveGame();
+        }
+
+        function showFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'click-float';
+            el.textContent = text;
+            el.style.left = (x - 30) + 'px';
+            el.style.top = (y - 20) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        // ---- ПОКУПКА СЕМЕНИ ----
+        function buySeed(seedId) {
+            const price = getSeedPrice(seedId);
+            if (state.money < price) return;
+            state.money -= price;
+            state.seedInventory[seedId] = (state.seedInventory[seedId] || 0) + 1;
+            state.seeds++;
+            updateUI();
+            checkAchievements();
+            saveGame();
+        }
+
+        // ---- ПЕРЕРОЖДЕНИЕ ----
+        function doPrestige() {
+            const required = 1000 * Math.pow(2, state.prestigeLevel);
+            if (state.totalMoneyEarned < required) {
+                alert(`Нужно заработать ${Math.floor(required)}💰`);
+                return;
+            }
+            if (!confirm(`Переродиться? Бонус +${(state.prestigeLevel + 1) * 0.5}x`)) return;
+
+            state.prestigeLevel++;
+            state.prestigeBonus = 1 + (state.prestigeLevel * 0.5);
+            state.seedInventory = {};
+            state.seeds = 0;
+            state.autoClickers = 0;
+            state.autoClickLevel = 1;
+            state.clickMultiplier = 1 + state.prestigeLevel * 0.1;
+            updateUI();
+            checkAchievements();
+            saveGame();
+            alert(`✨ Перерождение! Бонус: x${state.prestigeBonus.toFixed(1)}`);
+        }
+
+        // ---- ДОСТИЖЕНИЯ ----
+        function checkAchievements() {
+            ACHIEVEMENTS.forEach(a => {
+                if (!state.achievements.includes(a.id) && a.check()) {
+                    state.achievements.push(a.id);
+                    setTimeout(() => alert(`🏆 ${a.name}!\n${a.desc}`), 300);
+                }
+            });
+        }
+
+        // ---- ОБНОВЛЕНИЕ UI ----
+        function updateUI() {
+            document.getElementById('money').textContent = Math.floor(state.money);
+            document.getElementById('seeds').textContent = state.seeds;
+            const cps = state.autoClickers * 0.5 * state.autoClickLevel * state.prestigeBonus;
+            document.getElementById('cps').textContent = cps.toFixed(1);
+
+            const shop = document.getElementById('shopContainer');
+            shop.innerHTML = '';
+            ALL_SEEDS.slice(0, 12).forEach(seed => {
+                const price = getSeedPrice(seed.id);
+                const owned = state.seedInventory[seed.id] || 0;
+                const btn = document.createElement('button');
+                btn.className = 'shop-btn' + (state.money < price ? ' disabled' : '');
+                btn.innerHTML = `${seed.emoji} ${seed.name}<span class="price">💰 ${price}</span><span class="owned">+${seed.income}💰/с | ${owned} шт.</span>`;
+                btn.onclick = () => buySeed(seed.id);
+                shop.appendChild(btn);
+            });
+
+            document.getElementById('prestigeBtn').textContent = `✨ Перерождение (${Math.floor(1000 * Math.pow(2, state.prestigeLevel))}💰)`;
+
+            const list = document.getElementById('seedList');
+            list.innerHTML = '';
+            ALL_SEEDS.forEach(seed => {
+                const owned = state.seedInventory[seed.id] || 0;
+                if (owned > 0 || seed.tier <= 3) {
+                    const div = document.createElement('div');
+                    div.className = 'seed-item';
+                    div.innerHTML = `<span class="sname">${seed.emoji} ${seed.name}</span><span class="sprice">💰 ${getSeedPrice(seed.id)}</span><span class="sincome">📈 ${seed.income} | ${owned} шт.</span>`;
+                    list.appendChild(div);
+                }
+            });
+
+            document.getElementById('achievementDisplay').textContent = `🏅 Достижения: ${state.achievements.length}/${ACHIEVEMENTS.length}`;
+            saveGame();
+        }
+
+        // ---- ВКЛАДКИ ----
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ---- СОХРАНЕНИЕ ----
+        function saveGame() {
+            try { localStorage.setItem('gardenClickerSave', JSON.stringify(state)); } catch(e) {}
+        }
+        function loadGame() {
+            try {
+                const data = localStorage.getItem('gardenClickerSave');
+                if (data) { state = { ...state, ...JSON.parse(data) }; return true; }
+            } catch(e) {}
+            return false;
+        }
+
+        // ---- ТИК АВТОКЛИКЕРА ----
+        function gameTick() {
+            const cps = state.autoClickers * 0.5 * state.autoClickLevel * state.prestigeBonus;
+            if (cps > 0) {
+                state.money += cps / 10;
+                state.totalMoneyEarned += cps / 10;
+                updateUI();
+                checkAchievements();
+            }
+        }
+
+        // ---- ИНИЦИАЛИЗАЦИЯ ----
+        loadGame();
+        updateUI();
+
+        // Клик по круглой кнопке
+        const clickBtn = document.getElementById('clickBtn');
+        clickBtn.addEventListener('click', clickHandler);
+        clickBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            clickHandler(e.touches[0]);
+        });
+
+        // Другие кнопки
+        document.getElementById('autoClickBtn').addEventListener('click', () => {
+            const price = Math.floor(50 * Math.pow(1.5, state.autoClickers));
+            if (state.money >= price) {
+                state.money -= price;
+                state.autoClickers++;
+                updateUI();
+                saveGame();
+            } else {
+                alert(`Нужно ${price}💰`);
+            }
+        });
+
+        document.getElementById('prestigeBtn').addEventListener('click', doPrestige);
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Сбросить весь прогресс?')) {
+                localStorage.removeItem('gardenClickerSave');
+                location.reload();
+            }
+        });
+
+        setInterval(() => saveGame(), 15000);
+        setInterval(gameTick, 100);
+
+        console.log('🌱 Сад-Кликер загружен! Круглая кнопка по центру ✅');
+    </script>
+</body>
+</html>
