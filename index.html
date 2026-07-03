@@ -14,6 +14,7 @@
             align-items: center;
             font-family: 'Segoe UI', system-ui, sans-serif;
             padding: 10px;
+            touch-action: none;
         }
         .game {
             background: #2d5a2d;
@@ -71,6 +72,7 @@
             background: #1f3f1f; color: #8aaa8a; border: 2px solid #3d6a3d;
             padding: 5px 0; border-radius: 14px; cursor: pointer;
             font-weight: bold; font-size: 9px; transition: all 0.12s;
+            touch-action: manipulation;
         }
         .tab-btn.active { background: #3d7a3d; color: #f0f7d0; border-color: #6fbf6f; }
         .tab-content { display: none; }
@@ -86,7 +88,7 @@
             background: #1f4a1f; color: #e8f5d0; border: 2px solid #4d8a4d;
             padding: 3px 2px; border-radius: 10px; font-weight: bold;
             font-size: 8px; cursor: pointer; transition: all 0.12s;
-            text-align: center; line-height: 1.1;
+            text-align: center; line-height: 1.1; touch-action: manipulation;
         }
         .shop-btn:active { transform: scale(0.92); background: #123012; }
         .shop-btn.disabled { opacity: 0.4; filter: grayscale(0.7); pointer-events: none; }
@@ -96,29 +98,27 @@
         .shop-btn.bought { border-color: #ffd700; background: #2a5a2a; }
 
         .actions {
-            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
             gap: 3px; margin-top: 4px;
         }
         .action-btn {
             background: #8f7a3a; color: #1e2a1e; border: none;
             padding: 5px 0; border-radius: 14px; font-weight: bold;
             font-size: 8px; cursor: pointer; border: 2px solid #c4a84a;
-            transition: all 0.12s;
+            transition: all 0.12s; touch-action: manipulation;
         }
         .action-btn:active { transform: scale(0.92); background: #6f5f2a; }
         .action-btn.danger { background: #7a3a3a; border-color: #aa5a5a; color: #f0d0d0; }
         .action-btn.gold { background: #c49a3a; border-color: #eac464; }
         .action-btn.minigame { background: #4a6a9a; border-color: #6a9aca; color: #f0f7ff; }
         .action-btn.minigame:active { background: #2a4a7a; }
-        .action-btn.green { background: #3a8a3a; border-color: #5aaa5a; }
+        .action-btn.profile { background: #6a4a8a; border-color: #9a6aca; color: #f0d0ff; }
 
         .seed-list {
             background: #1a3a1a; border-radius: 12px; padding: 6px;
             max-height: 90px; overflow-y: auto; margin-top: 4px;
             border: 2px solid #3d6a3d;
         }
-        .seed-list::-webkit-scrollbar { width: 3px; }
-        .seed-list::-webkit-scrollbar-thumb { background: #4d8a4d; border-radius: 8px; }
         .seed-item {
             display: flex; justify-content: space-between; padding: 2px 4px;
             color: #cde0cd; font-size: 8px; border-bottom: 1px solid #2a4a2a;
@@ -134,34 +134,79 @@
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: #0a0a1a; z-index: 1000; display: none;
             flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px;
+            padding: 10px;
         }
         .minigame-overlay.active { display: flex; }
-        .minigame-header { color: #fff; font-size: 16px; font-weight: bold; margin-bottom: 6px; text-align: center; }
+        .minigame-header { color: #fff; font-size: 16px; font-weight: bold; text-align: center; }
+        .minigame-timer { color: #ff6b6b; font-size: 22px; font-weight: bold; margin: 4px 0; text-shadow: 0 0 20px rgba(255,0,0,0.5); }
+        .minigame-score { color: #ffd700; font-size: 16px; font-weight: bold; margin: 2px 0; }
+        .minigame-result { color: #ffd700; font-size: 18px; font-weight: bold; margin: 4px 0; text-align: center; min-height: 24px; }
+
         .minigame-canvas-wrap {
             position: relative; background: #1a1a2e; border-radius: 20px;
-            border: 3px solid #4a6a9a; width: 100%; max-width: 360px;
-            aspect-ratio: 1 / 1; touch-action: none;
+            border: 3px solid #4a6a9a; width: 100%; max-width: 380px;
+            aspect-ratio: 1 / 1; touch-action: none; overflow: hidden;
         }
-        .minigame-canvas-wrap canvas { width: 100%; height: 100%; border-radius: 18px; display: block; touch-action: none; }
-        .minigame-timer { color: #ff6b6b; font-size: 24px; font-weight: bold; margin: 6px 0; text-shadow: 0 0 20px rgba(255,0,0,0.5); }
+        .minigame-canvas-wrap canvas {
+            width: 100%; height: 100%; border-radius: 18px; display: block;
+            touch-action: none; position: relative; z-index: 1;
+        }
+
+        /* Джойстик */
+        .joystick-area {
+            position: absolute; bottom: 0; left: 0; right: 0; top: 0;
+            z-index: 2; touch-action: none;
+        }
+
         .minigame-close {
             background: #7a3a3a; color: #fff; border: none;
             padding: 8px 24px; border-radius: 24px; font-size: 14px;
             font-weight: bold; cursor: pointer; margin-top: 6px;
-            border: 2px solid #aa5a5a;
+            border: 2px solid #aa5a5a; touch-action: manipulation;
         }
         .minigame-close:active { transform: scale(0.92); background: #5a2a2a; }
-        .minigame-result { color: #ffd700; font-size: 18px; font-weight: bold; margin: 4px 0; text-align: center; }
+
+        /* ===== АВТОРИЗАЦИЯ ===== */
+        .auth-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px;
+        }
+        .auth-overlay.hidden { display: none; }
+        .auth-box {
+            background: #2d5a2d; padding: 30px 25px; border-radius: 30px;
+            border: 3px solid #4d8a4d; max-width: 350px; width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        .auth-box h2 { color: #ffd700; text-align: center; font-size: 22px; margin-bottom: 16px; }
+        .auth-box input {
+            width: 100%; padding: 12px 15px; margin: 6px 0; border-radius: 16px;
+            border: 2px solid #4d7a4d; background: #1f3f1f; color: #e8f5d0;
+            font-size: 14px; outline: none;
+        }
+        .auth-box input::placeholder { color: #6a8a6a; }
+        .auth-box button {
+            width: 100%; padding: 12px; margin: 6px 0; border-radius: 20px;
+            border: none; font-weight: bold; font-size: 16px; cursor: pointer;
+            transition: all 0.12s; touch-action: manipulation;
+        }
+        .auth-box button:active { transform: scale(0.95); }
+        .auth-btn-login { background: #6ab04a; color: #1e2a1e; }
+        .auth-btn-register { background: #c49a3a; color: #1e2a1e; }
+        .auth-error { color: #ff6b6b; font-size: 12px; text-align: center; margin: 4px 0; min-height: 18px; }
+        .auth-success { color: #6fcf6f; font-size: 12px; text-align: center; margin: 4px 0; min-height: 18px; }
+        .auth-toggle { color: #8aaa8a; text-align: center; font-size: 12px; margin-top: 8px; cursor: pointer; text-decoration: underline; touch-action: manipulation; }
+        .auth-toggle:active { color: #ffd700; }
     </style>
 </head>
 <body>
-    <div class="game">
+    <div class="game" id="gameContainer">
         <div class="stats">
             <div class="stat-item">💰 <span id="money">0</span></div>
             <div class="stat-item">🌱 <span id="seeds">0</span></div>
             <div class="stat-item">⚡ <span id="cps">0</span></div>
-            <div class="stat-item">📈 <span id="growth">0%</span></div>
+            <div class="stat-item">👤 <span id="playerName">Гость</span></div>
         </div>
 
         <div class="center-area">
@@ -176,52 +221,56 @@
                 <button class="tab-btn active" data-tab="shop">🏪 Магазин</button>
                 <button class="tab-btn" data-tab="seeds">🌱 Семена</button>
                 <button class="tab-btn minigame" id="minigameBtn">🎮 Игра</button>
-                <button class="tab-btn" data-tab="actions">⚡ Действия</button>
+                <button class="tab-btn profile" id="profileBtn">👤 Профиль</button>
             </div>
 
             <div class="tab-content active" id="tab-shop">
                 <div class="shop" id="shopContainer"></div>
+                <div class="actions">
+                    <button class="action-btn gold" id="prestigeBtn">✨ Перерождение</button>
+                    <button class="action-btn" id="autoClickBtn">🤖 Автокликер</button>
+                    <button class="action-btn danger" id="resetBtn">🔄 Сброс</button>
+                </div>
             </div>
 
             <div class="tab-content" id="tab-seeds">
                 <div class="seed-list" id="seedList"></div>
             </div>
 
-            <div class="tab-content" id="tab-actions">
-                <div class="actions">
-                    <button class="action-btn gold" id="prestigeBtn">✨ Перерождение</button>
-                    <button class="action-btn" id="autoClickBtn">🤖 Автокликер</button>
-                    <button class="action-btn green" id="skipDayBtn">⏭️ Пропустить день</button>
-                    <button class="action-btn danger" id="resetBtn">🔄 Сброс</button>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px;">
-                    <button class="action-btn" id="waterBtn">💧 Полив (+1💰)</button>
-                    <button class="action-btn" id="fertilizeBtn">🧪 Удобрение (+2💰)</button>
-                </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px;">
-                    <button class="action-btn" id="harvestBtn">🧺 Сбор урожая (+1.5💰)</button>
-                    <button class="action-btn" id="plantBtn">🌱 Посадка (+1💰)</button>
-                </div>
-            </div>
-
             <div class="footer" id="achievementDisplay">🏅 Достижения: 0</div>
+        </div>
+    </div>
+
+    <!-- ===== АВТОРИЗАЦИЯ ===== -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-box">
+            <h2 id="authTitle">🌱 Вход в сад</h2>
+            <div class="auth-error" id="authError"></div>
+            <div class="auth-success" id="authSuccess"></div>
+            <input type="text" id="authLogin" placeholder="👤 Имя пользователя">
+            <input type="password" id="authPassword" placeholder="🔒 Пароль">
+            <div id="authExtraFields"></div>
+            <button class="auth-btn-login" id="authSubmitBtn">Войти</button>
+            <div class="auth-toggle" id="authToggle">Нет аккаунта? Зарегистрироваться</div>
         </div>
     </div>
 
     <!-- ===== МИНИ-ИГРА ===== -->
     <div class="minigame-overlay" id="minigameOverlay">
-        <div class="minigame-header">🏃 УБЕГИ ОТ COOL KID!</div>
+        <div class="minigame-header">🏃 СУБВЕЙ САД</div>
         <div class="minigame-timer" id="minigameTimer">⏱️ 2:00</div>
+        <div class="minigame-score" id="minigameScore">🏆 Очки: 0</div>
         <div class="minigame-result" id="minigameResult"></div>
         <div class="minigame-canvas-wrap">
             <canvas id="minigameCanvas"></canvas>
+            <div class="joystick-area" id="joystickArea"></div>
         </div>
         <button class="minigame-close" id="minigameClose">🚪 Выйти</button>
     </div>
 
     <script>
         // ============================================================
-        //  ОСНОВНАЯ ИГРА
+        //  СИСТЕМА ПРОФИЛЕЙ + ИГРА
         // ============================================================
 
         let state = {
@@ -234,7 +283,7 @@
             totalClicks: 0,
             totalMoneyEarned: 0,
             achievements: [],
-            seedInventory: {}, // 1 = куплено
+            seedInventory: {},
             clickMultiplier: 1,
             goldenSeedChance: 0,
             clickBonus: 0,
@@ -243,7 +292,36 @@
             daySkipCount: 0,
         };
 
-        // ---- ГЕНЕРАЦИЯ 80 СЕМЯН (1 РАЗ) ----
+        let currentUsername = null;
+
+        // ---- БАЗА ДАННЫХ ----
+        function getUsers() {
+            try {
+                const data = localStorage.getItem('gardenUsers');
+                return data ? JSON.parse(data) : {};
+            } catch(e) { return {}; }
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('gardenUsers', JSON.stringify(users));
+        }
+
+        function getCurrentUser() {
+            try {
+                const data = localStorage.getItem('gardenCurrentUser');
+                return data ? JSON.parse(data) : null;
+            } catch(e) { return null; }
+        }
+
+        function setCurrentUser(username) {
+            if (username) {
+                localStorage.setItem('gardenCurrentUser', JSON.stringify(username));
+            } else {
+                localStorage.removeItem('gardenCurrentUser');
+            }
+        }
+
+        // ---- ГЕНЕРАЦИЯ 80 СЕМЯН ----
         function generateSeeds() {
             const seeds = [];
             const names = [
@@ -277,8 +355,7 @@
         const ALL_SEEDS = generateSeeds();
 
         function getSeedPrice(seedId) {
-            const seed = ALL_SEEDS[seedId];
-            return seed.basePrice;
+            return ALL_SEEDS[seedId].basePrice;
         }
 
         const ACHIEVEMENTS = [
@@ -297,6 +374,167 @@
             { id: 'minigame_win', name: 'Побег', desc: 'Выиграть в мини-игре', check: () => state.minigameWins >= 1 },
             { id: 'growth_100', name: 'Рост', desc: 'Достичь 100% роста', check: () => state.growth >= 100 },
         ];
+
+        // ---- ФУНКЦИИ АВТОРИЗАЦИИ ----
+        function showAuthScreen(mode) {
+            const overlay = document.getElementById('authOverlay');
+            overlay.classList.remove('hidden');
+            document.getElementById('authError').textContent = '';
+            document.getElementById('authSuccess').textContent = '';
+            document.getElementById('authLogin').value = '';
+            document.getElementById('authPassword').value = '';
+            document.getElementById('authExtraFields').innerHTML = '';
+
+            if (mode === 'login') {
+                document.getElementById('authTitle').textContent = '🌱 Вход в сад';
+                document.getElementById('authSubmitBtn').textContent = 'Войти';
+                document.getElementById('authSubmitBtn').className = 'auth-btn-login';
+                document.getElementById('authToggle').textContent = 'Нет аккаунта? Зарегистрироваться';
+                document.getElementById('authToggle').dataset.mode = 'register';
+            } else {
+                document.getElementById('authTitle').textContent = '🌱 Регистрация';
+                document.getElementById('authSubmitBtn').textContent = 'Создать аккаунт';
+                document.getElementById('authSubmitBtn').className = 'auth-btn-register';
+                document.getElementById('authToggle').textContent = 'Уже есть аккаунт? Войти';
+                document.getElementById('authToggle').dataset.mode = 'login';
+                document.getElementById('authExtraFields').innerHTML = `
+                    <input type="password" id="authPassword2" placeholder="🔒 Повторите пароль">
+                `;
+            }
+        }
+
+        function handleAuth() {
+            const login = document.getElementById('authLogin').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const errorEl = document.getElementById('authError');
+            const successEl = document.getElementById('authSuccess');
+            errorEl.textContent = '';
+            successEl.textContent = '';
+
+            if (!login || !password) {
+                errorEl.textContent = 'Заполните все поля!';
+                return;
+            }
+
+            const isRegister = document.getElementById('authSubmitBtn').textContent === 'Создать аккаунт';
+            const users = getUsers();
+
+            if (isRegister) {
+                const password2 = document.getElementById('authPassword2').value.trim();
+                if (password !== password2) {
+                    errorEl.textContent = 'Пароли не совпадают!';
+                    return;
+                }
+                if (users[login]) {
+                    errorEl.textContent = 'Пользователь уже существует!';
+                    return;
+                }
+                users[login] = {
+                    password: password,
+                    state: { ...state }
+                };
+                saveUsers(users);
+                successEl.textContent = '✅ Аккаунт создан! Входим...';
+                setTimeout(() => loginUser(login), 500);
+            } else {
+                if (!users[login] || users[login].password !== password) {
+                    errorEl.textContent = 'Неверное имя или пароль!';
+                    return;
+                }
+                successEl.textContent = '✅ Добро пожаловать!';
+                setTimeout(() => loginUser(login), 500);
+            }
+        }
+
+        function loginUser(username) {
+            const users = getUsers();
+            if (!users[username]) return;
+            setCurrentUser(username);
+            currentUsername = username;
+            document.getElementById('authOverlay').classList.add('hidden');
+            if (users[username].state) {
+                state = { ...state, ...users[username].state };
+            }
+            updateUI();
+            updateProfileUI();
+        }
+
+        function logoutUser() {
+            if (confirm('Выйти из аккаунта? Прогресс сохранится.')) {
+                savePlayerState();
+                setCurrentUser(null);
+                currentUsername = null;
+                state = {
+                    money: 0, seeds: 0, prestigeLevel: 0, prestigeBonus: 1,
+                    autoClickers: 0, autoClickLevel: 1, totalClicks: 0,
+                    totalMoneyEarned: 0, achievements: [], seedInventory: {},
+                    clickMultiplier: 1, goldenSeedChance: 0, clickBonus: 0,
+                    growth: 0, minigameWins: 0, daySkipCount: 0,
+                };
+                updateUI();
+                showAuthScreen('login');
+            }
+        }
+
+        function savePlayerState() {
+            if (!currentUsername) return;
+            const users = getUsers();
+            if (users[currentUsername]) {
+                users[currentUsername].state = { ...state };
+                saveUsers(users);
+            }
+        }
+
+        function loadPlayerState(username) {
+            const users = getUsers();
+            if (users[username] && users[username].state) {
+                state = { ...state, ...users[username].state };
+                return true;
+            }
+            return false;
+        }
+
+        function updateProfileUI() {
+            document.getElementById('playerName').textContent = currentUsername || 'Гость';
+        }
+
+        function showProfileSettings() {
+            if (!currentUsername) {
+                alert('Вы не авторизованы!');
+                return;
+            }
+            const users = getUsers();
+            const user = users[currentUsername];
+            if (!user) return;
+
+            const choice = prompt('Выберите действие:\n1 - Сменить ник\n2 - Сменить пароль\n3 - Выйти из аккаунта');
+            if (choice === '1') {
+                const newUsername = prompt('Введите новый ник:', currentUsername);
+                if (newUsername && newUsername.trim() !== '' && newUsername.trim() !== currentUsername) {
+                    if (users[newUsername.trim()]) {
+                        alert('Пользователь с таким именем уже существует!');
+                        return;
+                    }
+                    users[newUsername.trim()] = { ...user };
+                    delete users[currentUsername];
+                    currentUsername = newUsername.trim();
+                    setCurrentUser(currentUsername);
+                    saveUsers(users);
+                    updateProfileUI();
+                    alert('✅ Ник изменён!');
+                }
+            } else if (choice === '2') {
+                const newPassword = prompt('Введите новый пароль:');
+                if (newPassword && newPassword.trim() !== '') {
+                    const users2 = getUsers();
+                    users2[currentUsername].password = newPassword.trim();
+                    saveUsers(users2);
+                    alert('✅ Пароль изменён!');
+                }
+            } else if (choice === '3') {
+                logoutUser();
+            }
+        }
 
         // ---- КЛИК ----
         function clickHandler(event) {
@@ -318,7 +556,7 @@
 
             updateUI();
             checkAchievements();
-            saveGame();
+            savePlayerState();
         }
 
         function showFloatingText(x, y, text) {
@@ -331,9 +569,9 @@
             setTimeout(() => el.remove(), 1000);
         }
 
-        // ---- ПОКУПКА СЕМЕНИ (1 РАЗ) ----
+        // ---- ПОКУПКА СЕМЕНИ ----
         function buySeed(seedId) {
-            if (state.seedInventory[seedId] === 1) return; // уже куплено
+            if (state.seedInventory[seedId] === 1) return;
             const price = getSeedPrice(seedId);
             if (state.money < price) return;
             state.money -= price;
@@ -345,7 +583,7 @@
 
             updateUI();
             checkAchievements();
-            saveGame();
+            savePlayerState();
         }
 
         // ---- ПРОПУСТИТЬ ДЕНЬ ----
@@ -358,23 +596,11 @@
             state.money -= price;
             state.daySkipCount++;
             state.growth = Math.min(100, state.growth + 10);
-            // Бонус к деньгам за пропуск
             const bonus = 2 + state.daySkipCount * 0.5;
             state.money += bonus;
             showFloatingText(window.innerWidth/2, window.innerHeight/2, `📈 +10% рост! +${bonus.toFixed(1)}💰`);
             updateUI();
-            saveGame();
-        }
-
-        // ---- ДЕЙСТВИЯ (маленький доход) ----
-        function doAction(name, amount, cost = 0) {
-            if (state.money < cost) { alert(`Нужно ${cost}💰`); return; }
-            state.money -= cost;
-            state.money += amount;
-            state.totalMoneyEarned += amount;
-            showFloatingText(window.innerWidth/2, window.innerHeight/2 - 50, `+${amount}💰`);
-            updateUI();
-            saveGame();
+            savePlayerState();
         }
 
         // ---- ПЕРЕРОЖДЕНИЕ ----
@@ -398,7 +624,7 @@
             state.daySkipCount = 0;
             updateUI();
             checkAchievements();
-            saveGame();
+            savePlayerState();
             alert(`✨ Перерождение! Бонус: x${state.prestigeBonus.toFixed(1)}`);
         }
 
@@ -417,7 +643,7 @@
             document.getElementById('seeds').textContent = state.seeds;
             const cps = state.autoClickers * 0.5 * state.autoClickLevel * state.prestigeBonus;
             document.getElementById('cps').textContent = cps.toFixed(1);
-            document.getElementById('growth').textContent = Math.floor(state.growth) + '%';
+            updateProfileUI();
 
             const shop = document.getElementById('shopContainer');
             shop.innerHTML = '';
@@ -451,14 +677,25 @@
             });
 
             document.getElementById('achievementDisplay').textContent = `🏅 Достижения: ${state.achievements.length}/${ACHIEVEMENTS.length}`;
-            saveGame();
         }
 
         // ---- ВКЛАДКИ ----
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (this.id === 'minigameBtn') {
+                    if (!currentUsername) {
+                        alert('Сначала войдите в аккаунт!');
+                        return;
+                    }
                     startMinigame();
+                    return;
+                }
+                if (this.id === 'profileBtn') {
+                    if (!currentUsername) {
+                        alert('Вы не авторизованы!');
+                        return;
+                    }
+                    showProfileSettings();
                     return;
                 }
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -468,18 +705,7 @@
             });
         });
 
-        // ---- СОХРАНЕНИЕ ----
-        function saveGame() {
-            try { localStorage.setItem('gardenClickerSave', JSON.stringify(state)); } catch(e) {}
-        }
-        function loadGame() {
-            try {
-                const data = localStorage.getItem('gardenClickerSave');
-                if (data) { state = { ...state, ...JSON.parse(data) }; return true; }
-            } catch(e) {}
-            return false;
-        }
-
+        // ---- АВТОКЛИКЕР ----
         function gameTick() {
             const cps = state.autoClickers * 0.5 * state.autoClickLevel * state.prestigeBonus;
             if (cps > 0) {
@@ -491,23 +717,36 @@
         }
 
         // ============================================================
-        //  МИНИ-ИГРА: УБЕГИ ОТ COOL KID
+        //  МИНИ-ИГРА: СУБВЕЙ САД (Subway Surfers стиль)
         // ============================================================
         let minigameRunning = false;
         let minigameTimer = 120;
         let minigameInterval = null;
+        let minigameScore = 0;
         let mgPlayer = { x: 0, y: 0 };
         let mgEnemy = { x: 0, y: 0 };
-        const MG_SIZE = 35;
+        let obstacles = [];
+        let particles = [];
+        const MG_SIZE = 28;
+        const PLAYER_SPEED = 4;
         let mgCanvas, mgCtx, mgWidth, mgHeight;
         let mgTouchId = null;
+        let mgTouchX = 0, mgTouchY = 0;
+        let frameCount = 0;
+        let obstacleTimer = 0;
 
         function startMinigame() {
             const overlay = document.getElementById('minigameOverlay');
             overlay.classList.add('active');
             document.getElementById('minigameResult').textContent = '';
+            document.getElementById('minigameScore').textContent = '🏆 Очки: 0';
             minigameTimer = 120;
+            minigameScore = 0;
             minigameRunning = true;
+            obstacles = [];
+            particles = [];
+            frameCount = 0;
+            obstacleTimer = 0;
             updateMinigameTimer();
 
             mgCanvas = document.getElementById('minigameCanvas');
@@ -518,8 +757,8 @@
             mgWidth = mgCanvas.width;
             mgHeight = mgCanvas.height;
 
-            mgPlayer = { x: mgWidth/2, y: mgHeight/2 };
-            mgEnemy = { x: 50, y: 50 };
+            mgPlayer = { x: mgWidth/2, y: mgHeight - 80 };
+            mgEnemy = { x: mgWidth/2, y: 50 };
 
             if (minigameInterval) clearInterval(minigameInterval);
             minigameInterval = setInterval(() => {
@@ -530,10 +769,14 @@
                 }
             }, 1000);
 
-            mgCanvas.addEventListener('touchstart', mgTouchStart, { passive: false });
-            mgCanvas.addEventListener('touchmove', mgTouchMove, { passive: false });
-            mgCanvas.addEventListener('touchend', mgTouchEnd, { passive: false });
-            mgCanvas.addEventListener('mousemove', mgMouseMove);
+            const joystickArea = document.getElementById('joystickArea');
+            joystickArea.addEventListener('touchstart', mgTouchStart, { passive: false });
+            joystickArea.addEventListener('touchmove', mgTouchMove, { passive: false });
+            joystickArea.addEventListener('touchend', mgTouchEnd, { passive: false });
+
+            // Для мыши (ПК)
+            joystickArea.addEventListener('mousemove', mgMouseMove);
+            joystickArea.addEventListener('mouseleave', () => { mgTouchX = 0; mgTouchY = 0; });
 
             requestAnimationFrame(gameLoop);
         }
@@ -549,53 +792,181 @@
             const touch = e.touches[0];
             if (!touch) return;
             mgTouchId = touch.identifier;
-            const rect = mgCanvas.getBoundingClientRect();
-            mgPlayer.x = (touch.clientX - rect.left) * (mgWidth / rect.width);
-            mgPlayer.y = (touch.clientY - rect.top) * (mgHeight / rect.height);
+            mgTouchX = touch.clientX;
+            mgTouchY = touch.clientY;
         }
 
         function mgTouchMove(e) {
             e.preventDefault();
             const touch = Array.from(e.touches).find(t => t.identifier === mgTouchId);
             if (!touch) return;
-            const rect = mgCanvas.getBoundingClientRect();
-            mgPlayer.x = (touch.clientX - rect.left) * (mgWidth / rect.width);
-            mgPlayer.y = (touch.clientY - rect.top) * (mgHeight / rect.height);
+            mgTouchX = touch.clientX;
+            mgTouchY = touch.clientY;
         }
 
-        function mgTouchEnd(e) { mgTouchId = null; }
+        function mgTouchEnd(e) {
+            mgTouchId = null;
+            mgTouchX = 0;
+            mgTouchY = 0;
+        }
 
         function mgMouseMove(e) {
             const rect = mgCanvas.getBoundingClientRect();
-            mgPlayer.x = (e.clientX - rect.left) * (mgWidth / rect.width);
-            mgPlayer.y = (e.clientY - rect.top) * (mgHeight / rect.height);
+            const isOver = e.clientX >= rect.left && e.clientX <= rect.right &&
+                           e.clientY >= rect.top && e.clientY <= rect.bottom;
+            if (isOver) {
+                mgTouchX = e.clientX;
+                mgTouchY = e.clientY;
+            } else {
+                mgTouchX = 0;
+                mgTouchY = 0;
+            }
+        }
+
+        function getJoystickDir() {
+            if (!mgTouchX || !mgTouchY) return { x: 0, y: 0 };
+            const rect = mgCanvas.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const dx = (mgTouchX - centerX) / (rect.width / 2);
+            const dy = (mgTouchY - centerY) / (rect.height / 2);
+            const len = Math.sqrt(dx*dx + dy*dy);
+            if (len > 1) {
+                return { x: dx / len, y: dy / len };
+            }
+            return { x: dx, y: dy };
         }
 
         function gameLoop() {
             if (!minigameRunning) return;
-            updateEnemy();
+            frameCount++;
+            updateGame();
             drawGame();
-            checkCollision();
             requestAnimationFrame(gameLoop);
         }
 
-        function updateEnemy() {
+        function updateGame() {
+            // Управление через джойстик
+            const dir = getJoystickDir();
+            if (Math.abs(dir.x) > 0.1 || Math.abs(dir.y) > 0.1) {
+                mgPlayer.x += dir.x * PLAYER_SPEED;
+                mgPlayer.y += dir.y * PLAYER_SPEED;
+            }
+
+            // Стены — не выходить за поле
+            const margin = MG_SIZE / 2 + 5;
+            mgPlayer.x = Math.max(margin, Math.min(mgWidth - margin, mgPlayer.x));
+            mgPlayer.y = Math.max(margin, Math.min(mgHeight - margin, mgPlayer.y));
+
+            // Враг (Cool Kid) бежит за игроком
             const dx = mgPlayer.x - mgEnemy.x;
             const dy = mgPlayer.y - mgEnemy.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
             if (dist > 1) {
-                const speed = 1.2 + (120 - minigameTimer) / 150;
-                mgEnemy.x += (dx / dist) * Math.min(speed, 3);
-                mgEnemy.y += (dy / dist) * Math.min(speed, 3);
+                const speed = 0.8 + (120 - minigameTimer) / 200;
+                mgEnemy.x += (dx / dist) * Math.min(speed, 2.5);
+                mgEnemy.y += (dy / dist) * Math.min(speed, 2.5);
             }
             mgEnemy.x = Math.max(MG_SIZE/2, Math.min(mgWidth - MG_SIZE/2, mgEnemy.x));
             mgEnemy.y = Math.max(MG_SIZE/2, Math.min(mgHeight - MG_SIZE/2, mgEnemy.y));
+
+            // Генерация препятствий
+            obstacleTimer++;
+            if (obstacleTimer > 30 + Math.random() * 30) {
+                obstacleTimer = 0;
+                const side = Math.random();
+                let x, y;
+                if (side < 0.33) {
+                    x = MG_SIZE;
+                    y = Math.random() * mgHeight;
+                } else if (side < 0.66) {
+                    x = mgWidth - MG_SIZE;
+                    y = Math.random() * mgHeight;
+                } else {
+                    x = Math.random() * mgWidth;
+                    y = MG_SIZE;
+                }
+                obstacles.push({
+                    x: x,
+                    y: y,
+                    size: 18 + Math.random() * 20,
+                    speed: 0.5 + Math.random() * 0.8,
+                    angle: Math.random() * Math.PI * 2,
+                    type: Math.floor(Math.random() * 3)
+                });
+            }
+
+            // Движение препятствий (плывут к игроку)
+            obstacles.forEach(obs => {
+                const dx2 = mgPlayer.x - obs.x;
+                const dy2 = mgPlayer.y - obs.y;
+                const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                if (dist2 > 1) {
+                    obs.x += (dx2 / dist2) * obs.speed * 0.5;
+                    obs.y += (dy2 / dist2) * obs.speed * 0.5;
+                }
+            });
+
+            // Проверка столкновения с препятствиями
+            obstacles = obstacles.filter(obs => {
+                const dx2 = mgPlayer.x - obs.x;
+                const dy2 = mgPlayer.y - obs.y;
+                const dist2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                if (dist2 < MG_SIZE/2 + obs.size/2) {
+                    return false; // столкновение — удаляем препятствие
+                }
+                // Если препятствие улетело далеко — удаляем
+                if (Math.abs(obs.x) > mgWidth + 50 || Math.abs(obs.y) > mgHeight + 50) {
+                    return false;
+                }
+                return true;
+            });
+
+            // Проверка столкновения с Cool Kid
+            const dx3 = mgPlayer.x - mgEnemy.x;
+            const dy3 = mgPlayer.y - mgEnemy.y;
+            const dist3 = Math.sqrt(dx3*dx3 + dy3*dy3);
+            if (dist3 < MG_SIZE) {
+                endMinigame(false);
+                return;
+            }
+
+            // Очки за время
+            if (frameCount % 30 === 0) {
+                minigameScore++;
+                document.getElementById('minigameScore').textContent = `🏆 Очки: ${minigameScore}`;
+            }
+
+            // Эффекты
+            if (frameCount % 10 === 0) {
+                particles.push({
+                    x: mgPlayer.x + (Math.random() - 0.5) * 20,
+                    y: mgPlayer.y + (Math.random() - 0.5) * 20,
+                    life: 20 + Math.random() * 20,
+                    maxLife: 30 + Math.random() * 20,
+                    size: 2 + Math.random() * 4,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    color: Math.random() > 0.5 ? '#6ab04a' : '#ffd700'
+                });
+            }
+
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life--;
+                return p.life > 0;
+            });
         }
 
         function drawGame() {
             mgCtx.clearRect(0, 0, mgWidth, mgHeight);
+            
+            // Пол
             mgCtx.fillStyle = '#1a1a2e';
             mgCtx.fillRect(0, 0, mgWidth, mgHeight);
+            
+            // Клетки (эффект дороги)
             for (let i = 0; i < mgWidth; i += 40) {
                 for (let j = 0; j < mgHeight; j += 40) {
                     mgCtx.fillStyle = (i/40 + j/40) % 2 === 0 ? '#222244' : '#1a1a36';
@@ -603,21 +974,53 @@
                 }
             }
 
-            // Игрок — фермер
+            // Препятствия
+            obstacles.forEach(obs => {
+                const colors = ['#ff6b6b', '#ffd93d', '#6bcb77'];
+                mgCtx.shadowColor = colors[obs.type] || '#ff6b6b';
+                mgCtx.shadowBlur = 15;
+                mgCtx.fillStyle = colors[obs.type] || '#ff6b6b';
+                mgCtx.beginPath();
+                if (obs.type === 0) {
+                    // Квадрат
+                    mgCtx.fillRect(obs.x - obs.size/2, obs.y - obs.size/2, obs.size, obs.size);
+                } else if (obs.type === 1) {
+                    // Круг
+                    mgCtx.arc(obs.x, obs.y, obs.size/2, 0, Math.PI*2);
+                    mgCtx.fill();
+                } else {
+                    // Треугольник
+                    mgCtx.moveTo(obs.x, obs.y - obs.size/2);
+                    mgCtx.lineTo(obs.x - obs.size/2, obs.y + obs.size/2);
+                    mgCtx.lineTo(obs.x + obs.size/2, obs.y + obs.size/2);
+                    mgCtx.closePath();
+                    mgCtx.fill();
+                }
+                mgCtx.shadowBlur = 0;
+                // Эмодзи на препятствии
+                mgCtx.font = '14px sans-serif';
+                mgCtx.textAlign = 'center';
+                mgCtx.textBaseline = 'middle';
+                mgCtx.fillStyle = '#fff';
+                const emojis = ['🧱', '🚧', '⛔'];
+                mgCtx.fillText(emojis[obs.type] || '🧱', obs.x, obs.y);
+            });
+
+            // Игрок (фермер)
             mgCtx.shadowColor = '#4a9a4a';
-            mgCtx.shadowBlur = 20;
+            mgCtx.shadowBlur = 25;
             mgCtx.fillStyle = '#6ab04a';
             mgCtx.beginPath();
             mgCtx.arc(mgPlayer.x, mgPlayer.y, MG_SIZE/2, 0, Math.PI*2);
             mgCtx.fill();
             mgCtx.shadowBlur = 0;
-            mgCtx.font = '20px sans-serif';
+            mgCtx.font = '22px sans-serif';
             mgCtx.textAlign = 'center';
             mgCtx.textBaseline = 'middle';
             mgCtx.fillStyle = '#fff';
             mgCtx.fillText('🧑‍🌾', mgPlayer.x, mgPlayer.y);
 
-            // Враг — Cool Kid (красный)
+            // Cool Kid (враг)
             mgCtx.shadowColor = '#ff4444';
             mgCtx.shadowBlur = 30;
             mgCtx.fillStyle = '#cc2222';
@@ -625,25 +1028,35 @@
             mgCtx.arc(mgEnemy.x, mgEnemy.y, MG_SIZE/2, 0, Math.PI*2);
             mgCtx.fill();
             mgCtx.shadowBlur = 0;
-            mgCtx.font = '20px sans-serif';
+            mgCtx.font = '22px sans-serif';
             mgCtx.textAlign = 'center';
             mgCtx.textBaseline = 'middle';
             mgCtx.fillStyle = '#fff';
             mgCtx.fillText('😎', mgEnemy.x, mgEnemy.y);
-
-            // Метка "COOL KID"
-            mgCtx.font = '10px sans-serif';
+            mgCtx.font = '9px sans-serif';
             mgCtx.fillStyle = '#ff6666';
             mgCtx.fillText('COOL KID', mgEnemy.x, mgEnemy.y - MG_SIZE/2 - 10);
-        }
 
-        function checkCollision() {
-            const dx = mgPlayer.x - mgEnemy.x;
-            const dy = mgPlayer.y - mgEnemy.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist < MG_SIZE) {
-                endMinigame(false);
-            }
+            // Частицы
+            particles.forEach(p => {
+                const alpha = p.life / p.maxLife;
+                mgCtx.globalAlpha = alpha;
+                mgCtx.fillStyle = p.color;
+                mgCtx.beginPath();
+                mgCtx.arc(p.x, p.y, p.size * alpha, 0, Math.PI*2);
+                mgCtx.fill();
+                mgCtx.globalAlpha = 1;
+            });
+
+            // Стены (рамка)
+            mgCtx.strokeStyle = '#4a6a9a';
+            mgCtx.lineWidth = 4;
+            mgCtx.strokeRect(2, 2, mgWidth - 4, mgHeight - 4);
+            mgCtx.strokeStyle = '#3a5a7a';
+            mgCtx.lineWidth = 2;
+            mgCtx.setLineDash([8, 8]);
+            mgCtx.strokeRect(6, 6, mgWidth - 12, mgHeight - 12);
+            mgCtx.setLineDash([]);
         }
 
         function endMinigame(win) {
@@ -653,19 +1066,22 @@
             document.getElementById('minigameTimer').textContent = win ? '🎉 ПОБЕДА!' : '💀 ТЕБЯ ПОЙМАЛИ!';
             const result = document.getElementById('minigameResult');
             if (win) {
-                const reward = 5 + state.prestigeLevel * 2;
+                const reward = 5 + state.prestigeLevel * 2 + Math.floor(minigameScore / 10);
                 state.money += reward;
                 state.totalMoneyEarned += reward;
                 state.minigameWins++;
                 result.textContent = `🏆 +${reward}💰 за победу!`;
                 result.style.color = '#ffd700';
             } else {
-                result.textContent = '😵 Попробуй ещё раз!';
+                const reward = Math.floor(minigameScore / 20) + 1;
+                state.money += reward;
+                state.totalMoneyEarned += reward;
+                result.textContent = `😵 Попробуй ещё раз! +${reward}💰 утешительный приз.`;
                 result.style.color = '#ff6b6b';
             }
             updateUI();
             checkAchievements();
-            saveGame();
+            savePlayerState();
         }
 
         // ---- ЗАКРЫТИЕ МИНИ-ИГРЫ ----
@@ -679,9 +1095,31 @@
         //  ИНИЦИАЛИЗАЦИЯ
         // ============================================================
 
-        loadGame();
-        updateUI();
+        const savedUser = getCurrentUser();
+        if (savedUser) {
+            const users = getUsers();
+            if (users[savedUser]) {
+                currentUsername = savedUser;
+                loadPlayerState(savedUser);
+                updateUI();
+                updateProfileUI();
+                document.getElementById('authOverlay').classList.add('hidden');
+            } else {
+                setCurrentUser(null);
+                showAuthScreen('login');
+            }
+        } else {
+            showAuthScreen('login');
+        }
 
+        // ---- СОБЫТИЯ АВТОРИЗАЦИИ ----
+        document.getElementById('authSubmitBtn').addEventListener('click', handleAuth);
+        document.getElementById('authToggle').addEventListener('click', function() {
+            const mode = this.dataset.mode || 'register';
+            showAuthScreen(mode);
+        });
+
+        // ---- СОБЫТИЯ ИГРЫ ----
         document.getElementById('clickBtn').addEventListener('click', clickHandler);
         document.getElementById('clickBtn').addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -689,37 +1127,44 @@
         });
 
         document.getElementById('autoClickBtn').addEventListener('click', () => {
+            if (!currentUsername) { alert('Войдите в аккаунт!'); return; }
             const price = Math.floor(50 * Math.pow(1.5, state.autoClickers));
             if (state.money >= price) {
                 state.money -= price;
                 state.autoClickers++;
                 updateUI();
-                saveGame();
+                savePlayerState();
             } else {
                 alert(`Нужно ${price}💰`);
             }
         });
 
-        document.getElementById('prestigeBtn').addEventListener('click', doPrestige);
+        document.getElementById('prestigeBtn').addEventListener('click', () => {
+            if (!currentUsername) { alert('Войдите в аккаунт!'); return; }
+            doPrestige();
+        });
+
         document.getElementById('resetBtn').addEventListener('click', () => {
+            if (!currentUsername) { alert('Войдите в аккаунт!'); return; }
             if (confirm('Сбросить весь прогресс?')) {
-                localStorage.removeItem('gardenClickerSave');
-                location.reload();
+                state = {
+                    money: 0, seeds: 0, prestigeLevel: 0, prestigeBonus: 1,
+                    autoClickers: 0, autoClickLevel: 1, totalClicks: 0,
+                    totalMoneyEarned: 0, achievements: [], seedInventory: {},
+                    clickMultiplier: 1, goldenSeedChance: 0, clickBonus: 0,
+                    growth: 0, minigameWins: 0, daySkipCount: 0,
+                };
+                savePlayerState();
+                updateUI();
+                alert('Прогресс сброшен!');
             }
         });
 
-        document.getElementById('skipDayBtn').addEventListener('click', skipDay);
-
-        // Действия
-        document.getElementById('waterBtn').addEventListener('click', () => doAction('Полив', 1, 0));
-        document.getElementById('fertilizeBtn').addEventListener('click', () => doAction('Удобрение', 2, 0));
-        document.getElementById('harvestBtn').addEventListener('click', () => doAction('Сбор урожая', 1.5, 0));
-        document.getElementById('plantBtn').addEventListener('click', () => doAction('Посадка', 1, 0));
-
-        setInterval(() => saveGame(), 15000);
+        setInterval(() => savePlayerState(), 15000);
         setInterval(gameTick, 100);
 
-        console.log('🌱 Сад-Кликер обновлён! 80 семян (1 раз), Cool Kid, скин фермера, пропуск дня, действия.');
+        console.log('🌱 Сад-Кликер с Subway Surfers мини-игрой!');
+        console.log('👤 Текущий пользователь:', currentUsername || 'Гость');
     </script>
 </body>
-</html>
+            </html>
