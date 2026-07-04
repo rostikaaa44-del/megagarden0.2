@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🌱 Сад-Кликер</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:10px}
+        .app{background:#2d5a2d;border-radius:30px;padding:20px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);min-height:400px}
+        .header{color:#ffd700;font-size:24px;font-weight:700;text-align:center;margin-bottom:16px;border-bottom:2px solid #4d8a4d;padding-bottom:12px}
+        .user-info{background:#1f3f1f;border-radius:16px;padding:10px;margin-bottom:16px;border:2px solid #4d7a4d;display:flex;justify-content:space-between;align-items:center}
+        .user-info .name{color:#e8f5d0;font-size:14px;font-weight:700}
+        .user-info .name span{color:#ffd700}
+        .user-info .money{color:#ffd700;font-size:14px;font-weight:700}
+        .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+        .game-btn{background:#1f4a1f;color:#e8f5d0;border:2px solid #4d8a4d;border-radius:16px;padding:16px 8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .12s}
+        .game-btn:active{transform:scale(.95);background:#123012}
+        .game-btn .emoji{font-size:28px;display:block;margin-bottom:4px}
+        .game-btn.gold{border-color:#ffd700}
+        .auth-btn{background:#6ab04a;color:#1e2a1e;border:none;padding:10px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;border:2px solid #5aaa5a}
+        .auth-btn:active{transform:scale(.95)}
+        .auth-btn.red{background:#7a3a3a;color:#f0d0d0;border-color:#aa5a5a}
+        .footer{color:#8aaa8a;text-align:center;font-size:8px;margin-top:12px}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="app">
+        <div class="header">🌱 САД-КЛИКЕР</div>
+        <div class="user-info" id="userInfo">
+            <div class="name">👤 <span id="userName">Гость</span></div>
+            <div class="money">💰 <span id="userMoney">0</span></div>
+        </div>
+        <div class="game-grid">
+            <div class="game-btn gold" onclick="location.href='clicker.html'">
+                <span class="emoji">🧑‍🌾</span>
+                Сад-Кликер
+                <span style="font-size:8px;color:#8aaa8a;display:block;">Тапай и сажай!</span>
+            </div>
+            <div class="game-btn" onclick="location.href='escape.html'">
+                <span class="emoji">🏃</span>
+                Побег от Cool Kid
+                <span style="font-size:8px;color:#8aaa8a;display:block;">5 раундов</span>
+            </div>
+            <div class="game-btn" onclick="location.href='match3.html'">
+                <span class="emoji">🍎</span>
+                Три в ряд
+                <span style="font-size:8px;color:#8aaa8a;display:block;">Собирай комбинации</span>
+            </div>
+            <div class="game-btn" onclick="location.href='friends.html'">
+                <span class="emoji">👥</span>
+                Друзья
+                <span style="font-size:8px;color:#8aaa8a;display:block;">Добавляй и торгуй</span>
+            </div>
+        </div>
+        <button class="auth-btn" id="profileBtn" onclick="location.href='profile.html'">👤 Мой профиль</button>
+        <button class="auth-btn red" id="logoutBtn">🚪 Выйти</button>
+        <div class="footer" id="statusMsg">🌱 Выбери игру и начинай!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.style.color = isError ? '#ff6b6b' : '#ffd700';
+            el.style.borderColor = isError ? '#ff6b6b' : '#ffd700';
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function updateUI() {
+            const user = getCurrentUser();
+            const nameEl = document.getElementById('userName');
+            const moneyEl = document.getElementById('userMoney');
+            const statusEl = document.getElementById('statusMsg');
+            if (user) {
+                const state = getUserState(user);
+                nameEl.textContent = user;
+                moneyEl.textContent = Math.floor(state?.money || 0);
+                statusEl.textContent = `👋 Привет, ${user}!`;
+                document.getElementById('logoutBtn').textContent = '🚪 Выйти';
+            } else {
+                nameEl.textContent = 'Гость';
+                moneyEl.textContent = '0';
+                statusEl.textContent = '🌱 Войди в аккаунт, чтобы играть!';
+                document.getElementById('logoutBtn').textContent = '🔑 Войти';
+            }
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            const user = getCurrentUser();
+            if (user) {
+                if (confirm('Выйти из аккаунта?')) {
+                    logoutUser();
+                    showToast('👋 До встречи!', false);
+                    updateUI();
+                }
+            } else {
+                location.href = 'profile.html';
+            }
+        });
+
+        updateUI();
+        console.log('🏠 Главное меню загружено!');
+    </script>
+</body>
+</html>
