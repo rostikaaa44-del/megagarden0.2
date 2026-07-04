@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🏃 Побег от Cool Kid</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0a0a1a;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:8px}
+        .game{background:#1a1a2e;border-radius:30px;padding:12px;max-width:420px;width:100%;border:3px solid #4a6a9a;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;min-height:580px}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:4px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .header{color:#ffd700;font-size:16px;font-weight:700;text-align:center;margin:4px 0}
+        .timer{color:#ff6b6b;font-size:24px;font-weight:700;text-align:center}
+        .score{color:#ffd700;font-size:14px;font-weight:700;text-align:center}
+        .result{color:#ffd700;font-size:16px;font-weight:700;text-align:center;min-height:24px}
+        .canvas-wrap{position:relative;background:#1a1a2e;border-radius:16px;border:3px solid #4a6a9a;width:100%;max-width:360px;aspect-ratio:1/1;touch-action:none;overflow:hidden;margin:4px auto}
+        .canvas-wrap canvas{width:100%;height:100%;border-radius:14px;display:block;touch-action:none;position:relative;z-index:1}
+        .joystick-area{position:absolute;bottom:0;left:0;right:0;top:0;z-index:2;touch-action:none}
+        .footer{color:#8aaa8a;text-align:center;font-size:7px;margin-top:3px}
+        .round-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1500;display:none;justify-content:center;align-items:center;flex-direction:column;animation:fadeIn .5s}
+        .round-overlay.active{display:flex}
+        .round-overlay .round-text{color:#ffd700;font-size:48px;font-weight:700;text-shadow:0 0 40px rgba(255,215,0,.5);animation:pulse .8s ease-in-out infinite alternate}
+        .round-overlay .round-sub{color:#fff;font-size:18px;margin-top:8px}
+        @keyframes pulse{0%{transform:scale(1)}100%{transform:scale(1.08)}}
+        @keyframes fadeIn{0%{opacity:0}100%{opacity:1}}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+        .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="round-overlay" id="roundOverlay">
+        <div class="round-text" id="roundText">NEXT ROUND</div>
+        <div class="round-sub" id="roundSub">Раунд 1 из 5</div>
+    </div>
+    <div class="game">
+        <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+        <div class="header">🏃 ПОБЕГ ОТ COOL KID</div>
+        <div class="timer" id="timer">⏱️ 2:00</div>
+        <div class="score" id="score">🏆 Очки: 0</div>
+        <div class="result" id="result"></div>
+        <div class="canvas-wrap">
+            <canvas id="gameCanvas"></canvas>
+            <div class="joystick-area" id="joystick"></div>
+        </div>
+        <div class="footer" id="statusMsg">🕹️ Управляй пальцем, убегай от Cool Kid!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // ================================================================
+        //  ПОБЕГ ОТ COOL KID
+        // ================================================================
+
+        let currentUser = null;
+        let state = { coolkidWins: 0 };
+
+        let running = false;
+        let timer = 120;
+        let interval = null;
+        let score = 0;
+        let player = { x: 0, y: 0 };
+        let enemy = { x: 0, y: 0 };
+        let obstacles = [];
+        let particles = [];
+        let canvas, ctx, width, height;
+        let touchX = 0, touchY = 0;
+        let touchId = null;
+        const SIZE = 28;
+        let currentRound = 0;
+        const MAX_ROUNDS = 5;
+        let roundActive = false;
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function loadUser() {
+            const user = getCurrentUser();
+            if (!user) {
+                document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт через профиль!';
+                document.getElementById('statusMsg').style.color = '#ff6b6b';
+                return false;
+            }
+            currentUser = user;
+            const userState = getUserState(user);
+            if (userState) {
+                state = { ...state, ...userState };
+            }
+            return true;
+        }
+
+        function saveState() {
+            if (currentUser) {
+                saveUserState(currentUser, state);
+            }
+        }
+
+        function startGame() {
+            if (!loadUser()) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            currentRound = 0;
+            startRound();
+        }
+
+        function startRound() {
+            currentRound++;
+            if (currentRound > MAX_ROUNDS) {
+                document.getElementById('timer').textContent = '🏆 ВСЕ РАУНДЫ ПРОЙДЕНЫ!';
+                document.getElementById('result').textContent = '🎉 +100 монет за победу!';
+                document.getElementById('result').style.color = '#ffd700';
+                const userState = getUserState(currentUser);
+                if (userState) {
+                    userState.money = (userState.money || 0) + 100;
+                    state.coolkidWins = (state.coolkidWins || 0) + 1;
+                    saveUserState(currentUser, userState);
+                    saveState();
+                }
+                return;
+            }
+            const overlay = document.getElementById('roundOverlay');
+            document.getElementById('roundText').textContent = 'NEXT ROUND';
+            document.getElementById('roundSub').textContent = `Раунд ${currentRound} из ${MAX_ROUNDS}`;
+            overlay.classList.add('active');
+            playSound('round');
+            setTimeout(() => {
+                overlay.classList.remove('active');
+                startGameRound();
+            }, 2000);
+        }
+
+        function startGameRound() {
+            document.getElementById('result').textContent = '';
+            document.getElementById('score').textContent = `🏆 Раунд ${currentRound}/${MAX_ROUNDS}`;
+            timer = 120;
+            score = 0;
+            running = true;
+            roundActive = true;
+            obstacles = [];
+            particles = [];
+
+            canvas = document.getElementById('gameCanvas');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx = canvas.getContext('2d');
+            width = canvas.width;
+            height = canvas.height;
+
+            player = { x: width / 2, y: height - 80 };
+            enemy = { x: width / 2, y: 50 };
+
+            if (interval) clearInterval(interval);
+            interval = setInterval(() => {
+                timer--;
+                updateTimer();
+                if (timer <= 0) {
+                    endRound(true);
+                }
+            }, 1000);
+
+            const joystick = document.getElementById('joystick');
+            joystick.addEventListener('touchstart', touchStart, { passive: false });
+            joystick.addEventListener('touchmove', touchMove, { passive: false });
+            joystick.addEventListener('touchend', touchEnd, { passive: false });
+            joystick.addEventListener('mousemove', mouseMove);
+            joystick.addEventListener('mouseleave', () => { touchX = 0; touchY = 0; });
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateTimer() {
+            const mins = Math.floor(timer / 60);
+            const secs = timer % 60;
+            document.getElementById('timer').textContent = `⏱️ ${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function touchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            if (!touch) return;
+            touchId = touch.identifier;
+            touchX = touch.clientX;
+            touchY = touch.clientY;
+        }
+
+        function touchMove(e) {
+            e.preventDefault();
+            const touch = Array.from(e.touches).find(t => t.identifier === touchId);
+            if (!touch) return;
+            touchX = touch.clientX;
+            touchY = touch.clientY;
+        }
+
+        function touchEnd(e) {
+            touchId = null;
+            touchX = 0;
+            touchY = 0;
+        }
+
+        function mouseMove(e) {
+            const rect = canvas.getBoundingClientRect();
+            const isOver = e.clientX >= rect.left && e.clientX <= rect.right &&
+                e.clientY >= rect.top && e.clientY <= rect.bottom;
+            if (isOver) {
+                touchX = e.clientX;
+                touchY = e.clientY;
+            } else {
+                touchX = 0;
+                touchY = 0;
+            }
+        }
+
+        function getDir() {
+            if (!touchX || !touchY) return { x: 0, y: 0 };
+            const rect = canvas.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            const dx = (touchX - centerX) / (rect.width / 2);
+            const dy = (touchY - centerY) / (rect.height / 2);
+            const len = Math.sqrt(dx * dx + dy * dy);
+            if (len > 1) return { x: dx / len, y: dy / len };
+            return { x: dx, y: dy };
+        }
+
+        let frame = 0;
+        let obstacleTimer = 0;
+
+        function gameLoop() {
+            if (!running || !roundActive) return;
+            frame++;
+            const dir = getDir();
+            if (Math.abs(dir.x) > 0.1 || Math.abs(dir.y) > 0.1) {
+                player.x += dir.x * 4;
+                player.y += dir.y * 4;
+            }
+            const margin = SIZE / 2 + 5;
+            player.x = Math.max(margin, Math.min(width - margin, player.x));
+            player.y = Math.max(margin, Math.min(height - margin, player.y));
+
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > 1) {
+                const speed = 0.8 + (120 - timer) / 200;
+                enemy.x += (dx / dist) * Math.min(speed, 2.5);
+                enemy.y += (dy / dist) * Math.min(speed, 2.5);
+            }
+            enemy.x = Math.max(SIZE / 2, Math.min(width - SIZE / 2, enemy.x));
+            enemy.y = Math.max(SIZE / 2, Math.min(height - SIZE / 2, enemy.y));
+
+            obstacleTimer++;
+            if (obstacleTimer > 30 + Math.random() * 30) {
+                obstacleTimer = 0;
+                const side = Math.random();
+                let x, y;
+                if (side < 0.33) { x = SIZE;
+                    y = Math.random() * height; } else if (side < 0.66) { x = width - SIZE;
+                    y = Math.random() * height; } else { x = Math.random() * width;
+                    y = SIZE; }
+                obstacles.push({
+                    x, y,
+                    size: 18 + Math.random() * 20,
+                    speed: 0.5 + Math.random() * 0.8,
+                    type: Math.floor(Math.random() * 3)
+                });
+            }
+
+            obstacles.forEach(obs => {
+                const dx2 = player.x - obs.x;
+                const dy2 = player.y - obs.y;
+                const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                if (dist2 > 1) {
+                    obs.x += (dx2 / dist2) * obs.speed * 0.5;
+                    obs.y += (dy2 / dist2) * obs.speed * 0.5;
+                }
+            });
+
+            obstacles = obstacles.filter(obs => {
+                const dx2 = player.x - obs.x;
+                const dy2 = player.y - obs.y;
+                const dist2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+                if (dist2 < SIZE / 2 + obs.size / 2) return false;
+                if (Math.abs(obs.x) > width + 50 || Math.abs(obs.y) > height + 50) return false;
+                return true;
+            });
+
+            const dx3 = player.x - enemy.x;
+            const dy3 = player.y - enemy.y;
+            const dist3 = Math.sqrt(dx3 * dx3 + dy3 * dy3);
+            if (dist3 < SIZE) {
+                endRound(false);
+                return;
+            }
+
+            if (frame % 30 === 0) {
+                score++;
+                document.getElementById('score').textContent = `🏆 Раунд ${currentRound}/${MAX_ROUNDS} | Очки: ${score}`;
+            }
+
+            if (frame % 10 === 0) {
+                particles.push({
+                    x: player.x + (Math.random() - 0.5) * 20,
+                    y: player.y + (Math.random() - 0.5) * 20,
+                    life: 20 + Math.random() * 20,
+                    maxLife: 30 + Math.random() * 20,
+                    size: 2 + Math.random() * 4,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    color: Math.random() > 0.5 ? '#6ab04a' : '#ffd700'
+                });
+            }
+            particles = particles.filter(p => { p.x += p.vx;
+                p.y += p.vy;
+                p.life--; return p.life > 0; });
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, width, height);
+            for (let i = 0; i < width; i += 40) {
+                for (let j = 0; j < height; j += 40) {
+                    ctx.fillStyle = (i / 40 + j / 40) % 2 === 0 ? '#222244' : '#1a1a36';
+                    ctx.fillRect(i, j, 40, 40);
+                }
+            }
+
+            obstacles.forEach(obs => {
+                const colors = ['#ff6b6b', '#ffd93d', '#6bcb77'];
+                ctx.shadowColor = colors[obs.type] || '#ff6b6b';
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = colors[obs.type] || '#ff6b6b';
+                ctx.beginPath();
+                if (obs.type === 0) ctx.fillRect(obs.x - obs.size / 2, obs.y - obs.size / 2, obs.size, obs.size);
+                else if (obs.type === 1) { ctx.arc(obs.x, obs.y, obs.size / 2, 0, Math.PI * 2);
+                    ctx.fill(); } else {
+                    ctx.moveTo(obs.x, obs.y - obs.size / 2);
+                    ctx.lineTo(obs.x - obs.size / 2, obs.y + obs.size / 2);
+                    ctx.lineTo(obs.x + obs.size / 2, obs.y + obs.size / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#fff';
+                const emojis = ['🧱', '🚧', '⛔'];
+                ctx.fillText(emojis[obs.type] || '🧱', obs.x, obs.y);
+            });
+
+            ctx.shadowColor = '#4a9a4a';
+            ctx.shadowBlur = 25;
+            ctx.fillStyle = '#6ab04a';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, SIZE / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.font = '22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#fff';
+            ctx.fillText('🧑‍🌾', player.x, player.y);
+
+            ctx.shadowColor = '#ff4444';
+            ctx.shadowBlur = 30;
+            ctx.fillStyle = '#cc2222';
+            ctx.beginPath();
+            ctx.arc(enemy.x, enemy.y, SIZE / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.font = '22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#fff';
+            ctx.fillText('😎', enemy.x, enemy.y);
+            ctx.font = '9px sans-serif';
+            ctx.fillStyle = '#ff6666';
+            ctx.fillText('COOL KID', enemy.x, enemy.y - SIZE / 2 - 10);
+
+            particles.forEach(p => {
+                const alpha = p.life / p.maxLife;
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+
+            ctx.strokeStyle = '#4a6a9a';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, width - 4, height - 4);
+            ctx.strokeStyle = '#3a5a7a';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 8]);
+            ctx.strokeRect(6, 6, width - 12, height - 12);
+            ctx.setLineDash([]);
+        }
+
+        function endRound(win) {
+            if (!running || !roundActive) return;
+            running = false;
+            roundActive = false;
+            if (interval) clearInterval(interval);
+
+            if (win) {
+                document.getElementById('timer').textContent = '✅ РАУНД ПРОЙДЕН!';
+                document.getElementById('result').textContent = `🏆 Раунд ${currentRound} завершён!`;
+                document.getElementById('result').style.color = '#6fcf6f';
+                const reward = 5 + currentRound * 2;
+                const userState = getUserState(currentUser);
+                if (userState) {
+                    userState.money = (userState.money || 0) + reward;
+                    saveUserState(currentUser, userState);
+                }
+                playSound('achievement');
+                saveState();
+                setTimeout(() => {
+                    if (currentRound < MAX_ROUNDS) {
+                        startRound();
+                    } else {
+                        document.getElementById('timer').textContent = '🏆 ВСЕ РАУНДЫ ПРОЙДЕНЫ!';
+                        document.getElementById('result').textContent = '🎉 +100 монет за победу!';
+                        document.getElementById('result').style.color = '#ffd700';
+                        const userState2 = getUserState(currentUser);
+                        if (userState2) {
+                            userState2.money = (userState2.money || 0) + 100;
+                            state.coolkidWins = (state.coolkidWins || 0) + 1;
+                            saveUserState(currentUser, userState2);
+                            saveState();
+                        }
+                    }
+                }, 1500);
+            } else {
+                document.getElementById('timer').textContent = '💀 ТЕБЯ ПОЙМАЛИ!';
+                document.getElementById('result').textContent = `😵 Попробуй ещё раз! Раунд ${currentRound} провален`;
+                document.getElementById('result').style.color = '#ff6b6b';
+                const reward = Math.floor(score / 20) + 1;
+                const userState = getUserState(currentUser);
+                if (userState) {
+                    userState.money = (userState.money || 0) + reward;
+                    saveUserState(currentUser, userState);
+                }
+                saveState();
+            }
+        }
+
+        // Загрузка
+        loadUser();
+        document.getElementById('statusMsg').textContent = '🏃 Нажми "Новая игра" чтобы начать!';
+        document.querySelector('.back-btn').addEventListener('click', () => {
+            if (interval) clearInterval(interval);
+            running = false;
+            roundActive = false;
+            location.href = 'index.html';
+        });
+
+        // Старт игры по клику
+        document.querySelector('.canvas-wrap').addEventListener('click', startGame);
+        document.querySelector('.canvas-wrap').addEventListener('touchstart', (e) => {
+            if (!running) { e.preventDefault();
+                startGame(); }
+        });
+
+        console.log('🏃 Побег от Cool Kid загружен!');
+    </script>
+</body>
+</html>
