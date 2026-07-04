@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🍎 Три в ряд</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:8px}
+        .game{background:#2d5a2d;border-radius:30px;padding:12px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;min-height:580px}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:4px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .info{display:flex;justify-content:space-between;color:#e8f5d0;font-size:10px;padding:4px 8px;background:#1a3a1a;border-radius:12px;margin-bottom:4px}
+        .info span{color:#ffd700;font-weight:700}
+        .grid{display:grid;gap:4px;margin:4px auto;max-width:320px;grid-template-columns:repeat(6,1fr)}
+        .cell{background:#1a3a1a;border-radius:6px;display:flex;justify-content:center;align-items:center;font-size:28px;cursor:pointer;border:2px solid #2a5a2a;transition:all .25s cubic-bezier(.34,1.56,.64,1);aspect-ratio:1;min-width:28px;min-height:28px}
+        .cell.selected{border-color:#ffd700;box-shadow:0 0 20px rgba(255,215,0,.5);transform:scale(1.08)}
+        .cell.collected{opacity:.3;transform:scale(.8)}
+        .btn-row{display:flex;gap:6px;margin-top:4px;justify-content:center}
+        .action-btn{background:#3a8a3a;color:#f0f7d0;border:none;padding:6px 16px;border-radius:12px;font-weight:700;font-size:10px;cursor:pointer;border:2px solid #5aaa5a}
+        .action-btn:active{transform:scale(.92)}
+        .action-btn.red{background:#7a3a3a;border-color:#aa5a5a;color:#f0d0d0}
+        .footer{color:#8aaa8a;text-align:center;font-size:7px;margin-top:3px}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+        .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+        .result-text{color:#ffd700;font-size:14px;font-weight:700;text-align:center;min-height:20px}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="game">
+        <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+        <div class="info">
+            <span>⏱️ Время: <span id="timer">60</span>с</span>
+            <span>🏆 Очки: <span id="score">0</span></span>
+            <span>🏅 Рекорд: <span id="record">0</span></span>
+        </div>
+        <div class="grid" id="grid"></div>
+        <div class="result-text" id="result"></div>
+        <div class="btn-row">
+            <button class="action-btn" id="startBtn">▶ Новая игра</button>
+            <button class="action-btn red" id="resetBtn">🔄 Сброс</button>
+        </div>
+        <div class="footer" id="statusMsg">🍎 Собирай комбинации из 3+ фруктов!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // ================================================================
+        //  ТРИ В РЯД
+        // ================================================================
+
+        let currentUser = null;
+        let state = { matchRecord: 0 };
+
+        let grid = [];
+        const SIZE = 6;
+        const EMOJIS = ['🍅', '🥒', '🥕', '🌽', '🌻', '🍓'];
+        let selected = null;
+        let locked = false;
+        let animating = false;
+        let cellElements = [];
+        let timer = 60;
+        let score = 0;
+        let interval = null;
+        let running = false;
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function loadUser() {
+            const user = getCurrentUser();
+            if (!user) {
+                document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт!';
+                document.getElementById('statusMsg').style.color = '#ff6b6b';
+                return false;
+            }
+            currentUser = user;
+            const userState = getUserState(user);
+            if (userState) {
+                state = { ...state, ...userState };
+            }
+            document.getElementById('record').textContent = state.matchRecord || 0;
+            return true;
+        }
+
+        function saveState() {
+            if (currentUser) {
+                saveUserState(currentUser, state);
+            }
+        }
+
+        function startGame() {
+            if (!loadUser()) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            if (interval) clearInterval(interval);
+            running = true;
+            timer = 60;
+            score = 0;
+            selected = null;
+            locked = false;
+            animating = false;
+            cellElements = [];
+            document.getElementById('timer').textContent = '60';
+            document.getElementById('score').textContent = '0';
+            document.getElementById('result').textContent = '';
+
+            grid = [];
+            for (let i = 0; i < SIZE; i++) {
+                grid[i] = [];
+                for (let j = 0; j < SIZE; j++) {
+                    grid[i][j] = Math.floor(Math.random() * EMOJIS.length);
+                }
+            }
+            let attempts = 0;
+            while (hasMatches() && attempts < 100) {
+                for (let i = 0; i < SIZE; i++) {
+                    for (let j = 0; j < SIZE; j++) {
+                        if (isPartOfMatch(i, j)) grid[i][j] = Math.floor(Math.random() * EMOJIS.length);
+                    }
+                }
+                attempts++;
+            }
+            renderGrid();
+            interval = setInterval(() => {
+                timer--;
+                document.getElementById('timer').textContent = timer;
+                if (timer <= 0) endGame();
+            }, 1000);
+            document.getElementById('statusMsg').textContent = '🍎 Игра началась!';
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('grid');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${SIZE}, 1fr)`;
+            cellElements = [];
+            for (let i = 0; i < SIZE; i++) {
+                cellElements[i] = [];
+                for (let j = 0; j < SIZE; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = EMOJIS[grid[i][j]];
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    cell.style.transition = 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    cell.addEventListener('click', () => onCellClick(i, j));
+                    cell.addEventListener('touchstart', (e) => { e.preventDefault();
+                        onCellClick(i, j); });
+                    container.appendChild(cell);
+                    cellElements[i][j] = cell;
+                }
+            }
+        }
+
+        function onCellClick(row, col) {
+            if (!running || locked || animating) return;
+            if (!selected) { selected = [row, col];
+                highlightCell(row, col, true); return; }
+            const [sRow, sCol] = selected;
+            if (sRow === row && sCol === col) { selected = null;
+                highlightCell(row, col, false); return; }
+            const dr = Math.abs(sRow - row);
+            const dc = Math.abs(sCol - col);
+            if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+                animateSwap(sRow, sCol, row, col);
+            } else {
+                highlightCell(sRow, sCol, false);
+                selected = [row, col];
+                highlightCell(row, col, true);
+            }
+        }
+
+        function highlightCell(row, col, state) {
+            const cell = cellElements[row][col];
+            if (!cell) return;
+            if (state) {
+                cell.style.borderColor = '#ffd700';
+                cell.style.boxShadow = '0 0 20px rgba(255,215,0,0.5)';
+                cell.style.transform = 'scale(1.08)';
+            } else {
+                cell.style.borderColor = '#2a5a2a';
+                cell.style.boxShadow = 'none';
+                cell.style.transform = 'scale(1)';
+            }
+        }
+
+        function animateSwap(r1, c1, r2, c2) {
+            animating = true;
+            locked = true;
+            const cell1 = cellElements[r1][c1];
+            const cell2 = cellElements[r2][c2];
+            const temp = grid[r1][c1];
+            grid[r1][c1] = grid[r2][c2];
+            grid[r2][c2] = temp;
+
+            const rect1 = cell1.getBoundingClientRect();
+            const rect2 = cell2.getBoundingClientRect();
+            const fly1 = cell1.cloneNode(true);
+            const fly2 = cell2.cloneNode(true);
+            fly1.style.position = 'fixed';
+            fly1.style.left = rect1.left + 'px';
+            fly1.style.top = rect1.top + 'px';
+            fly1.style.width = rect1.width + 'px';
+            fly1.style.height = rect1.height + 'px';
+            fly1.style.zIndex = '100';
+            fly1.style.pointerEvents = 'none';
+            fly1.style.transition = 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            fly1.style.display = 'flex';
+            fly1.style.justifyContent = 'center';
+            fly1.style.alignItems = 'center';
+            fly1.style.fontSize = '28px';
+            fly1.style.background = '#1a3a1a';
+            fly1.style.borderRadius = '6px';
+            fly1.style.border = '2px solid #2a5a2a';
+            fly2.style.position = 'fixed';
+            fly2.style.left = rect2.left + 'px';
+            fly2.style.top = rect2.top + 'px';
+            fly2.style.width = rect2.width + 'px';
+            fly2.style.height = rect2.height + 'px';
+            fly2.style.zIndex = '100';
+            fly2.style.pointerEvents = 'none';
+            fly2.style.transition = 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            fly2.style.display = 'flex';
+            fly2.style.justifyContent = 'center';
+            fly2.style.alignItems = 'center';
+            fly2.style.fontSize = '28px';
+            fly2.style.background = '#1a3a1a';
+            fly2.style.borderRadius = '6px';
+            fly2.style.border = '2px solid #2a5a2a';
+            document.body.appendChild(fly1);
+            document.body.appendChild(fly2);
+            cell1.style.opacity = '0';
+            cell2.style.opacity = '0';
+            requestAnimationFrame(() => {
+                const newRect1 = cellElements[r2][c2].getBoundingClientRect();
+                const newRect2 = cellElements[r1][c1].getBoundingClientRect();
+                fly1.style.left = newRect1.left + 'px';
+                fly1.style.top = newRect1.top + 'px';
+                fly1.style.width = newRect1.width + 'px';
+                fly1.style.height = newRect1.height + 'px';
+                fly2.style.left = newRect2.left + 'px';
+                fly2.style.top = newRect2.top + 'px';
+                fly2.style.width = newRect2.width + 'px';
+                fly2.style.height = newRect2.height + 'px';
+            });
+            setTimeout(() => {
+                fly1.remove();
+                fly2.remove();
+                cell1.style.opacity = '1';
+                cell2.style.opacity = '1';
+                cell1.textContent = EMOJIS[grid[r1][c1]];
+                cell2.textContent = EMOJIS[grid[r2][c2]];
+                cell1.style.transform = 'scale(0.8)';
+                cell2.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    cell1.style.transform = 'scale(1)';
+                    cell2.style.transform = 'scale(1)';
+                }, 50);
+                selected = null;
+                animating = false;
+                if (hasMatches()) setTimeout(() => processMatches(), 100);
+                else animateSwapBack(r1, c1, r2, c2);
+            }, 280);
+        }
+
+        function animateSwapBack(r1, c1, r2, c2) {
+            animating = true;
+            locked = true;
+            const temp = grid[r1][c1];
+            grid[r1][c1] = grid[r2][c2];
+            grid[r2][c2] = temp;
+            const cell1 = cellElements[r1][c1];
+            const cell2 = cellElements[r2][c2];
+            const rect1 = cell1.getBoundingClientRect();
+            const rect2 = cell2.getBoundingClientRect();
+            const fly1 = cell1.cloneNode(true);
+            const fly2 = cell2.cloneNode(true);
+            fly1.style.position = 'fixed';
+            fly1.style.left = rect1.left + 'px';
+            fly1.style.top = rect1.top + 'px';
+            fly1.style.width = rect1.width + 'px';
+            fly1.style.height = rect1.height + 'px';
+            fly1.style.zIndex = '100';
+            fly1.style.pointerEvents = 'none';
+            fly1.style.transition = 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            fly1.style.display = 'flex';
+            fly1.style.justifyContent = 'center';
+            fly1.style.alignItems = 'center';
+            fly1.style.fontSize = '28px';
+            fly1.style.background = '#1a3a1a';
+            fly1.style.borderRadius = '6px';
+            fly1.style.border = '2px solid #2a5a2a';
+            fly2.style.position = 'fixed';
+            fly2.style.left = rect2.left + 'px';
+            fly2.style.top = rect2.top + 'px';
+            fly2.style.width = rect2.width + 'px';
+            fly2.style.height = rect2.height + 'px';
+            fly2.style.zIndex = '100';
+            fly2.style.pointerEvents = 'none';
+            fly2.style.transition = 'all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            fly2.style.display = 'flex';
+            fly2.style.justifyContent = 'center';
+            fly2.style.alignItems = 'center';
+            fly2.style.fontSize = '28px';
+            fly2.style.background = '#1a3a1a';
+            fly2.style.borderRadius = '6px';
+            fly2.style.border = '2px solid #2a5a2a';
+            document.body.appendChild(fly1);
+            document.body.appendChild(fly2);
+            cell1.style.opacity = '0';
+            cell2.style.opacity = '0';
+            requestAnimationFrame(() => {
+                const newRect1 = cellElements[r2][c2].getBoundingClientRect();
+                const newRect2 = cellElements[r1][c1].getBoundingClientRect();
+                fly1.style.left = newRect1.left + 'px';
+                fly1.style.top = newRect1.top + 'px';
+                fly1.style.width = newRect1.width + 'px';
+                fly1.style.height = newRect1.height + 'px';
+                fly2.style.left = newRect2.left + 'px';
+                fly2.style.top = newRect2.top + 'px';
+                fly2.style.width = newRect2.width + 'px';
+                fly2.style.height = newRect2.height + 'px';
+            });
+            setTimeout(() => {
+                fly1.remove();
+                fly2.remove();
+                cell1.style.opacity = '1';
+                cell2.style.opacity = '1';
+                cell1.textContent = EMOJIS[grid[r1][c1]];
+                cell2.textContent = EMOJIS[grid[r2][c2]];
+                selected = null;
+                animating = false;
+                locked = false;
+                document.getElementById('statusMsg').textContent = '🔄 Нет комбинации!';
+            }, 280);
+        }
+
+        function hasMatches() {
+            for (let i = 0; i < SIZE; i++)
+                for (let j = 0; j < SIZE; j++)
+                    if (isPartOfMatch(i, j)) return true;
+            return false;
+        }
+
+        function isPartOfMatch(row, col) {
+            const val = grid[row][col];
+            let count = 1;
+            for (let j = col - 1; j >= 0 && grid[row][j] === val; j--) count++;
+            for (let j = col + 1; j < SIZE && grid[row][j] === val; j++) count++;
+            if (count >= 3) return true;
+            count = 1;
+            for (let i = row - 1; i >= 0 && grid[i][col] === val; i--) count++;
+            for (let i = row + 1; i < SIZE && grid[i][col] === val; i++) count++;
+            return count >= 3;
+        }
+
+        function getMatches() {
+            const matches = [];
+            const checked = new Set();
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE; j++) {
+                    if (checked.has(`${i},${j}`)) continue;
+                    const val = grid[i][j];
+                    const group = [];
+                    let left = j,
+                        right = j;
+                    while (left - 1 >= 0 && grid[i][left - 1] === val) left--;
+                    while (right + 1 < SIZE && grid[i][right + 1] === val) right++;
+                    if (right - left + 1 >= 3) {
+                        for (let c = left; c <= right; c++) { group.push([i, c]);
+                            checked.add(`${i},${c}`); }
+                    }
+                    let top = i,
+                        bottom = i;
+                    while (top - 1 >= 0 && grid[top - 1][j] === val) top--;
+                    while (bottom + 1 < SIZE && grid[bottom + 1][j] === val) bottom++;
+                    if (bottom - top + 1 >= 3) {
+                        for (let r = top; r <= bottom; r++) {
+                            if (!checked.has(`${r},${j}`)) { group.push([r, j]);
+                                checked.add(`${r},${j}`); }
+                        }
+                    }
+                    if (group.length > 0) matches.push(group);
+                }
+            }
+            return matches;
+        }
+
+        function processMatches() {
+            const matches = getMatches();
+            if (matches.length === 0) { locked = false; return; }
+            let points = 0;
+            const cellsToRemove = new Set();
+            matches.forEach(group => { group.forEach(([r, c]) => cellsToRemove.add(`${r},${c}`));
+                points += group.length >= 4 ? group.length * 2 : group.length; });
+            score += points;
+            document.getElementById('score').textContent = score;
+            cellsToRemove.forEach(key => {
+                const [r, c] = key.split(',').map(Number);
+                grid[r][c] = -1;
+                const cell = cellElements[r][c];
+                if (cell) { cell.style.transform = 'scale(0)';
+                    cell.style.opacity = '0'; }
+            });
+            setTimeout(() => {
+                for (let c = 0; c < SIZE; c++) {
+                    let writeRow = SIZE - 1;
+                    for (let r = SIZE - 1; r >= 0; r--) {
+                        if (grid[r][c] !== -1) {
+                            grid[writeRow][c] = grid[r][c];
+                            if (writeRow !== r) grid[r][c] = -1;
+                            writeRow--;
+                        }
+                    }
+                    for (let r = writeRow; r >= 0; r--) {
+                        grid[r][c] = Math.floor(Math.random() * EMOJIS.length);
+                    }
+                }
+                renderGrid();
+                setTimeout(() => {
+                    if (hasMatches()) processMatches();
+                    else { locked = false;
+                        selected = null; }
+                }, 300);
+            }, 300);
+        }
+
+        function endGame() {
+            if (interval) clearInterval(interval);
+            running = false;
+            const reward = Math.floor(score / 2) + 2;
+            const userState = getUserState(currentUser);
+            if (userState) {
+                userState.money = (userState.money || 0) + reward;
+                if (score > (state.matchRecord || 0)) {
+                    state.matchRecord = score;
+                    document.getElementById('result').textContent = `🏆 НОВЫЙ РЕКОРД! +${reward}💰`;
+                    document.getElementById('result').style.color = '#ffd700';
+                    playSound('achievement');
+                } else {
+                    document.getElementById('result').textContent = `⏱️ Время вышло! +${reward}💰`;
+                    document.getElementById('result').style.color = '#6fcf6f';
+                }
+                saveUserState(currentUser, userState);
+                saveState();
+            }
+            document.getElementById('record').textContent = state.matchRecord || 0;
+            document.getElementById('statusMsg').textContent = '🍎 Игра окончена! Нажми "Новая игра"';
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (interval) clearInterval(interval);
+            running = false;
+            document.getElementById('grid').innerHTML = '';
+            document.getElementById('result').textContent = '';
+            document.getElementById('timer').textContent = '60';
+            document.getElementById('score').textContent = '0';
+            document.getElementById('statusMsg').textContent = '🍎 Нажми "Новая игра" чтобы начать!';
+        });
+
+        loadUser();
+        console.log('🍎 Три в ряд загружен!');
+    </script>
+</body>
+</html>
