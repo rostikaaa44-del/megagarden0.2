@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>👤 Профиль</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:10px}
+        .app{background:#2d5a2d;border-radius:30px;padding:16px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);min-height:480px}
+        .header{color:#ffd700;font-size:20px;font-weight:700;text-align:center;margin-bottom:12px;border-bottom:2px solid #4d8a4d;padding-bottom:8px}
+        .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#1f3f1f;padding:8px;border-radius:16px;margin-bottom:12px;border:2px solid #4d7a4d}
+        .stat-item{color:#e8f5d0;font-weight:700;font-size:9px;text-align:center}
+        .stat-item span{color:#ffd700;font-size:13px;display:block}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:10px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .box{background:#1a3a1a;border-radius:14px;padding:12px;border:2px solid #3d6a3d;display:flex;flex-direction:column;gap:6px}
+        .row{display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:10px;padding:5px 0;border-bottom:1px solid #2a4a2a}
+        .row .label{color:#8aaa8a}
+        .row .value{color:#ffd700;font-weight:700}
+        .btn{background:#2a5a2a;color:#e8f5d0;border:2px solid #4d8a4d;padding:6px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;text-align:center;transition:all .12s}
+        .btn:active{transform:scale(.95);background:#1a4a1a}
+        .btn.red{background:#7a3a3a;border-color:#aa5a5a;color:#f0d0d0}
+        .btn.gold{background:#c49a3a;border-color:#eac464;color:#1e2a1e}
+        .color-options{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0}
+        .color-options .color-btn{width:26px;height:26px;border-radius:50%;border:2px solid #4d8a4d;cursor:pointer;transition:all .12s}
+        .color-options .color-btn:active{transform:scale(.85)}
+        .color-options .color-btn.active{border-color:#ffd700;box-shadow:0 0 10px rgba(255,215,0,.4)}
+        .toggle-row{display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:9px;padding:4px 0}
+        .toggle-row .toggle-label{color:#8aaa8a}
+        .toggle-row .toggle-status{color:#ffd700;font-weight:700;font-size:10px}
+        .toggle-row input[type=range]{width:100%;margin:4px 0;accent-color:#ffd700}
+        .ach-list{max-height:100px;overflow-y:auto;font-size:8px;color:#8aaa8a;padding:4px;background:#1a3a1a;border-radius:8px;border:2px solid #3d6a3d}
+        .ach-list .ach-item{padding:2px 0;border-bottom:1px solid #2a4a2a;display:flex;justify-content:space-between}
+        .ach-list .ach-item.done{color:#ffd700}
+        .footer{color:#8aaa8a;text-align:center;font-size:8px;margin-top:8px}
+        .footer.error{color:#ff6b6b}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+        .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="app">
+        <div class="header">👤 МОЙ ПРОФИЛЬ</div>
+        <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+        <div class="stats">
+            <div class="stat-item">👤 <span id="userName">Гость</span></div>
+            <div class="stat-item">💰 <span id="userMoney">0</span></div>
+            <div class="stat-item">🏆 <span id="userPrestige">0</span></div>
+        </div>
+
+        <div class="box">
+            <div class="row"><span class="label">👤 Ник</span><span class="value" id="profileNick">Гость</span></div>
+            <div class="row"><span class="label">💰 Монет</span><span class="value" id="profileMoney">0</span></div>
+            <div class="row"><span class="label">🌱 Семян</span><span class="value" id="profileSeeds">0</span></div>
+            <div class="row"><span class="label">⚡ Доход</span><span class="value" id="profileCps">0</span></div>
+            <div class="row"><span class="label">🏆 Перерождений</span><span class="value" id="profilePrestige">0</span></div>
+            <div style="margin:4px 0;">
+                <div style="color:#8aaa8a;font-size:7px;margin-bottom:2px;">🎨 Цвет фона</div>
+                <div class="color-options" id="colorOptions">
+                    <div class="color-btn active" style="background:#0f1f0f;" data-color="#0f1f0f"></div>
+                    <div class="color-btn" style="background:#1a0f0f;" data-color="#1a0f0f"></div>
+                    <div class="color-btn" style="background:#0f0f1f;" data-color="#0f0f1f"></div>
+                    <div class="color-btn" style="background:#1f1f0f;" data-color="#1f1f0f"></div>
+                    <div class="color-btn" style="background:#0f1f1f;" data-color="#0f1f1f"></div>
+                    <div class="color-btn" style="background:#1a1a1a;" data-color="#1a1a1a"></div>
+                    <div class="color-btn" style="background:#1a0a2a;" data-color="#1a0a2a"></div>
+                </div>
+            </div>
+            <div class="toggle-row">
+                <span class="toggle-label">⚡ Режим производительности</span>
+                <span class="toggle-status" id="perfStatus">ВЫКЛ</span>
+            </div>
+            <input type="range" min="0" max="1" step="1" id="perfToggle" value="0">
+            <button class="btn gold" id="changeNickBtn">✏️ Сменить ник</button>
+            <button class="btn gold" id="changePassBtn">🔒 Сменить пароль</button>
+            <button class="btn red" id="loginBtn">🔑 Войти / Создать аккаунт</button>
+            <div style="margin-top:4px;">
+                <div style="color:#8aaa8a;font-size:7px;margin-bottom:2px;">🏅 Достижения</div>
+                <div class="ach-list" id="achList"></div>
+            </div>
+        </div>
+        <div class="footer" id="statusMsg">👤 Управляй своим профилем!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // ================================================================
+        //  ПРОФИЛЬ
+        // ================================================================
+
+        let currentUser = null;
+        let state = {};
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function loadUser() {
+            const user = getCurrentUser();
+            if (!user) {
+                currentUser = null;
+                document.getElementById('userName').textContent = 'Гость';
+                document.getElementById('profileNick').textContent = 'Гость';
+                document.getElementById('userMoney').textContent = '0';
+                document.getElementById('userPrestige').textContent = '0';
+                document.getElementById('profileMoney').textContent = '0';
+                document.getElementById('profileSeeds').textContent = '0';
+                document.getElementById('profileCps').textContent = '0';
+                document.getElementById('profilePrestige').textContent = '0';
+                document.getElementById('loginBtn').textContent = '🔑 Войти / Создать аккаунт';
+                document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт!';
+                document.getElementById('statusMsg').className = 'footer error';
+                document.getElementById('achList').innerHTML = '';
+                return false;
+            }
+            currentUser = user;
+            const userState = getUserState(user);
+            state = userState || {};
+            document.getElementById('userName').textContent = user;
+            document.getElementById('profileNick').textContent = user;
+            document.getElementById('userMoney').textContent = Math.floor(state.money || 0);
+            document.getElementById('userPrestige').textContent = state.prestigeLevel || 0;
+            document.getElementById('profileMoney').textContent = Math.floor(state.money || 0);
+            document.getElementById('profileSeeds').textContent = state.seeds || 0;
+            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1);
+            document.getElementById('profileCps').textContent = cps.toFixed(1);
+            document.getElementById('profilePrestige').textContent = state.prestigeLevel || 0;
+            document.getElementById('loginBtn').textContent = '🚪 Выйти';
+            document.getElementById('statusMsg').textContent = `👋 Привет, ${user}!`;
+            document.getElementById('statusMsg').className = 'footer';
+
+            // Достижения
+            const list = document.getElementById('achList');
+            list.innerHTML = '';
+            const achievements = state.achievements || [];
+            const allAch = [
+                'Первый клик', '100 кликов', '1000 кликов',
+                '100 монет', '1000 монет', '10000 монет',
+                '10 семян', '30 семян',
+                '1 перерождение', '5 перерождений',
+                '5 автокликеров', '10 автокликеров',
+                'Победа в три в ряд', 'Побег от Cool Kid'
+            ];
+            allAch.forEach(name => {
+                const div = document.createElement('div');
+                div.className = 'ach-item' + (achievements.includes(name) ? ' done' : '');
+                div.textContent = `${achievements.includes(name) ? '✅' : '⬜'} ${name}`;
+                list.appendChild(div);
+            });
+
+            // Цвет фона
+            const bgColor = state.bgColor || '#0f1f0f';
+            document.documentElement.style.setProperty('--bg', bgColor);
+            document.querySelectorAll('.color-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.color === bgColor);
+            });
+
+            // Режим производительности
+            const prefMode = state.prefMode || false;
+            document.getElementById('perfStatus').textContent = prefMode ? 'ВКЛ' : 'ВЫКЛ';
+            document.getElementById('perfToggle').value = prefMode ? 1 : 0;
+            return true;
+        }
+
+        function saveState() {
+            if (currentUser) {
+                saveUserState(currentUser, state);
+            }
+        }
+
+        document.querySelectorAll('.color-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+                state.bgColor = this.dataset.color;
+                document.documentElement.style.setProperty('--bg', state.bgColor);
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                saveState();
+                showToast('🎨 Цвет изменён!', false);
+            });
+        });
+
+        document.getElementById('perfToggle').addEventListener('input', function() {
+            if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            state.prefMode = parseInt(this.value) === 1;
+            document.getElementById('perfStatus').textContent = state.prefMode ? 'ВКЛ' : 'ВЫКЛ';
+            saveState();
+            showToast(`⚡ Режим ${state.prefMode ? 'включён' : 'выключен'}`, false);
+        });
+
+        document.getElementById('changeNickBtn').addEventListener('click', () => {
+            if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            const newNick = prompt('Введите новый ник:', currentUser);
+            if (!newNick || newNick.trim() === '') return;
+            if (newNick.trim() === currentUser) { showToast('⚠️ Это тот же ник', true); return; }
+            const users = getUsers();
+            if (users[newNick.trim()]) { showToast('❌ Это имя уже занято!', true); return; }
+            users[newNick.trim()] = { ...users[currentUser] };
+            delete users[currentUser];
+            currentUser = newNick.trim();
+            setCurrentUser(currentUser);
+            saveUsers(users);
+            loadUser();
+            showToast('✅ Ник изменён!', false);
+        });
+
+        document.getElementById('changePassBtn').addEventListener('click', () => {
+            if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            const newPass = prompt('Введите новый пароль:');
+            if (!newPass || newPass.trim() === '') return;
+            const users = getUsers();
+            users[currentUser].password = newPass.trim();
+            saveUsers(users);
+            showToast('✅ Пароль изменён!', false);
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            if (currentUser) {
+                if (confirm('Выйти из аккаунта?')) {
+                    logoutUser();
+                    loadUser();
+                    showToast('👋 До встречи!', false);
+                }
+                return;
+            }
+            // Показываем форму входа/регистрации
+            const action = prompt('Введите 1 для входа, 2 для регистрации:');
+            if (action === '1') {
+                const login = prompt('👤 Имя:');
+                if (!login) return;
+                const pass = prompt('🔒 Пароль:');
+                if (!pass) return;
+                const result = loginUser(login, pass);
+                if (result.success) {
+                    loadUser();
+                    showToast('✅ Добро пожаловать!', false);
+                    location.reload();
+                } else {
+                    showToast(`❌ ${result.error}`, true);
+                }
+            } else if (action === '2') {
+                const login = prompt('👤 Придумайте имя:');
+                if (!login) return;
+                const pass = prompt('🔒 Придумайте пароль:');
+                if (!pass) return;
+                const result = createAccount(login, pass);
+                if (result.success) {
+                    setCurrentUser(login);
+                    loadUser();
+                    showToast('✅ Аккаунт создан!', false);
+                    location.reload();
+                } else {
+                    showToast(`❌ ${result.error}`, true);
+                }
+            }
+        });
+
+        loadUser();
+        console.log('👤 Профиль загружен!');
+    </script>
+</body>
+</html>
