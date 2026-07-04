@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>👥 Друзья</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:10px}
+        .app{background:#2d5a2d;border-radius:30px;padding:16px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);min-height:500px}
+        .header{color:#ffd700;font-size:20px;font-weight:700;text-align:center;margin-bottom:12px;border-bottom:2px solid #4d8a4d;padding-bottom:8px}
+        .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#1f3f1f;padding:8px;border-radius:16px;margin-bottom:12px;border:2px solid #4d7a4d}
+        .stat-item{color:#e8f5d0;font-weight:700;font-size:10px;text-align:center}
+        .stat-item span{color:#ffd700;font-size:14px;display:block}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:10px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .input-row{display:flex;gap:6px;margin-bottom:10px}
+        .input-row input{flex:1;padding:8px 12px;border-radius:12px;border:2px solid #4d8a4d;background:#1f3f1f;color:#e8f5d0;font-size:12px;outline:0}
+        .input-row input::placeholder{color:#6a8a6a}
+        .input-row button{background:#3a8a3a;color:#f0f7d0;border:none;padding:8px 16px;border-radius:12px;font-weight:700;font-size:12px;cursor:pointer;border:2px solid #5aaa5a}
+        .input-row button:active{transform:scale(.92)}
+        .section-title{color:#e8f5d0;font-size:11px;font-weight:700;margin:8px 0 4px 0}
+        .list{max-height:200px;overflow-y:auto;background:#1a3a1a;border-radius:12px;padding:4px;border:2px solid #3d6a3d}
+        .item{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #2a4a2a;color:#e8f5d0;font-size:10px}
+        .item .name{color:#ffd700}
+        .item .btns{display:flex;gap:4px}
+        .item .btns button{background:#3a8a3a;color:#fff;border:none;padding:2px 8px;border-radius:6px;font-size:8px;cursor:pointer}
+        .item .btns button:active{transform:scale(.92)}
+        .item .btns button.red{background:#7a3a3a}
+        .request{background:#1a3a1a;border-radius:8px;padding:6px 10px;border:2px solid #ffd700;margin:4px 0;display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:10px}
+        .request .name{color:#ffd700}
+        .request .btns{display:flex;gap:4px}
+        .request .btns button{background:#3a8a3a;color:#fff;border:none;padding:2px 8px;border-radius:6px;font-size:8px;cursor:pointer}
+        .request .btns button:active{transform:scale(.92)}
+        .request .btns button.red{background:#7a3a3a}
+        .trade-box{background:#1a3a1a;border-radius:12px;padding:10px;border:2px solid #4d8a4d;margin-top:8px}
+        .trade-box .row{display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:10px;padding:3px 0}
+        .trade-box .row .val{color:#ffd700;font-weight:700}
+        .trade-box .tbtn{background:#c49a3a;color:#1e2a1e;border:none;padding:4px 12px;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer}
+        .trade-box .tbtn:active{transform:scale(.92)}
+        .trade-box .tbtn.red{background:#7a3a3a;color:#f0d0d0}
+        .footer{color:#8aaa8a;text-align:center;font-size:8px;margin-top:8px}
+        .footer.error{color:#ff6b6b}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+        .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+        .empty-msg{color:#6a8a6a;text-align:center;padding:15px 0;font-size:10px}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="app">
+        <div class="header">👥 МОИ ДРУЗЬЯ</div>
+        <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+        <div class="stats">
+            <div class="stat-item">👤 <span id="userName">Гость</span></div>
+            <div class="stat-item">👥 <span id="friendsCount">0</span></div>
+            <div class="stat-item">📩 <span id="requestsCount">0</span></div>
+        </div>
+
+        <div class="input-row">
+            <input type="text" id="friendInput" placeholder="👤 Введи ник друга">
+            <button id="addFriendBtn">➕ Добавить</button>
+        </div>
+
+        <div id="requestsContainer"></div>
+
+        <div class="section-title">👥 Твои друзья</div>
+        <div class="list" id="friendsList">
+            <div class="empty-msg">Нет друзей 😔</div>
+        </div>
+
+        <div class="trade-box" id="tradeBox" style="display:none;">
+            <div class="row"><span>💰 Твои монеты:</span><span class="val" id="myMoney">0</span></div>
+            <div class="row"><span>💰 Монеты друга:</span><span class="val" id="friendMoney">0</span></div>
+            <div style="display:flex;gap:6px;margin-top:4px;">
+                <button class="tbtn" id="sendMoneyBtn" style="flex:1;">📤 Отправить 5💰</button>
+                <button class="tbtn red" id="closeTradeBtn">🚪 Закрыть</button>
+            </div>
+        </div>
+
+        <div class="footer" id="statusMsg">👥 Добавляй друзей и торгуй!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // ================================================================
+        //  ДРУЗЬЯ
+        // ================================================================
+
+        let currentUser = null;
+        let friends = [];
+        let friendRequests = [];
+        let tradePartner = null;
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function loadUser() {
+            const user = getCurrentUser();
+            if (!user) {
+                document.getElementById('userName').textContent = 'Гость';
+                document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт через профиль!';
+                document.getElementById('statusMsg').className = 'footer error';
+                return false;
+            }
+            currentUser = user;
+            document.getElementById('userName').textContent = user;
+            friends = getFriends(user);
+            friendRequests = getFriendRequests(user);
+            updateUI();
+            document.getElementById('statusMsg').textContent = '👥 Добро пожаловать!';
+            document.getElementById('statusMsg').className = 'footer';
+            return true;
+        }
+
+        function updateUI() {
+            document.getElementById('friendsCount').textContent = friends.length;
+            document.getElementById('requestsCount').textContent = friendRequests.length;
+
+            const list = document.getElementById('friendsList');
+            list.innerHTML = '';
+            if (friends.length === 0) {
+                list.innerHTML = '<div class="empty-msg">Нет друзей 😔</div>';
+            } else {
+                friends.forEach(f => {
+                    const div = document.createElement('div');
+                    div.className = 'item';
+                    div.innerHTML = `
+                        <span class="name">👤 ${f}</span>
+                        <div class="btns">
+                            <button data-friend="${f}">💬 Торг</button>
+                            <button class="red" data-friend="${f}">✕</button>
+                        </div>
+                    `;
+                    div.querySelectorAll('button').forEach(b => {
+                        b.addEventListener('click', () => {
+                            if (b.textContent === '💬 Торг') {
+                                startTrade(f);
+                            } else {
+                                removeFriend(f);
+                            }
+                        });
+                    });
+                    list.appendChild(div);
+                });
+            }
+
+            const reqContainer = document.getElementById('requestsContainer');
+            reqContainer.innerHTML = '';
+            if (friendRequests.length > 0) {
+                const title = document.createElement('div');
+                title.className = 'section-title';
+                title.textContent = '📩 Запросы в друзья';
+                reqContainer.appendChild(title);
+                friendRequests.forEach(r => {
+                    const div = document.createElement('div');
+                    div.className = 'request';
+                    div.innerHTML = `
+                        <span class="name">📩 ${r}</span>
+                        <div class="btns">
+                            <button data-from="${r}">✅ Принять</button>
+                            <button class="red" data-from="${r}">❌ Отказать</button>
+                        </div>
+                    `;
+                    div.querySelectorAll('button').forEach(b => {
+                        b.addEventListener('click', () => {
+                            if (b.textContent === '✅ Принять') {
+                                acceptFriend(r);
+                            } else {
+                                declineFriend(r);
+                            }
+                        });
+                    });
+                    reqContainer.appendChild(div);
+                });
+            }
+        }
+
+        document.getElementById('addFriendBtn').addEventListener('click', () => {
+            const input = document.getElementById('friendInput');
+            const name = input.value.trim();
+            if (!name) { showToast('⚠️ Введи ник!', true); return; }
+            if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            const result = sendFriendRequest(currentUser, name);
+            if (result.success) {
+                showToast(`✅ Запрос отправлен ${name}!`, false);
+                input.value = '';
+                loadUser();
+            } else {
+                showToast(`❌ ${result.error}`, true);
+            }
+        });
+
+        function acceptFriend(fromUser) {
+            const result = acceptFriendRequest(currentUser, fromUser);
+            if (result.success) {
+                showToast(`✅ ${fromUser} теперь твой друг!`, false);
+                loadUser();
+            }
+        }
+
+        function declineFriend(fromUser) {
+            declineFriendRequest(currentUser, fromUser);
+            showToast(`❌ Запрос от ${fromUser} отклонён`, true);
+            loadUser();
+        }
+
+        function removeFriend(friendName) {
+            if (!confirm(`Удалить ${friendName} из друзей?`)) return;
+            removeFriend(currentUser, friendName);
+            showToast(`❌ ${friendName} удалён`, true);
+            loadUser();
+        }
+
+        function startTrade(friendName) {
+            const users = getUsers();
+            if (!users[friendName]) { showToast('❌ Друг не найден!', true); return; }
+            tradePartner = friendName;
+            document.getElementById('tradeBox').style.display = 'block';
+            document.getElementById('myMoney').textContent = Math.floor(users[currentUser]?.state?.money || 0);
+            document.getElementById('friendMoney').textContent = Math.floor(users[friendName]?.state?.money || 0);
+            showToast(`💬 Торговля с ${friendName}`, false);
+        }
+
+        document.getElementById('sendMoneyBtn').addEventListener('click', () => {
+            if (!tradePartner) return;
+            const result = sendMoney(currentUser, tradePartner, 5);
+            if (result.success) {
+                const users = getUsers();
+                document.getElementById('myMoney').textContent = Math.floor(users[currentUser]?.state?.money || 0);
+                document.getElementById('friendMoney').textContent = Math.floor(users[tradePartner]?.state?.money || 0);
+                showToast(`✅ Отправлено 5💰 ${tradePartner}`, false);
+            } else {
+                showToast(`❌ ${result.error}`, true);
+            }
+        });
+
+        document.getElementById('closeTradeBtn').addEventListener('click', () => {
+            tradePartner = null;
+            document.getElementById('tradeBox').style.display = 'none';
+        });
+
+        loadUser();
+        console.log('👥 Друзья загружены!');
+    </script>
+</body>
+</html>
