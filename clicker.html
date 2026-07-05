@@ -6,38 +6,275 @@
     <title>🌱 Сад-Кликер</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;user-select:none}
-        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:8px}
-        .game{background:#2d5a2d;border-radius:30px;padding:12px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;min-height:580px}
-        .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:3px;background:#1f3f1f;padding:5px 8px;border-radius:20px;margin-bottom:5px;border:2px solid #4d7a4d}
-        .stat-item{color:#e8f5d0;font-weight:700;font-size:8px;text-align:center}
-        .stat-item span{color:#ffd700;font-size:12px;display:block}
-        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:4px;border:2px solid #aa5a5a;width:100%}
-        .back-btn:active{transform:scale(.95)}
-        .click-area{display:flex;justify-content:center;align-items:center;padding:8px 0}
-        .click-btn{width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#6ab04a,#1f4a1f);display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;border:4px solid #8fc98f;box-shadow:0 8px 0 #0f2a0f,0 12px 30px rgba(0,0,0,.6);transition:all .08s}
-        .click-btn:active{transform:translateY(6px);box-shadow:0 2px 0 #0f2a0f,0 8px 20px rgba(0,0,0,.5)}
-        .click-emoji{font-size:48px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+        body{
+            background: #87CEEB;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            font-family:'Segoe UI',sans-serif;
+            padding:8px;
+            background-image: linear-gradient(180deg, #87CEEB 0%, #87CEEB 60%, #4a8f4a 60%, #3d7a3d 100%);
+        }
+        .game{
+            background: #8B6B4A;
+            border-radius:30px;
+            padding:12px;
+            max-width:420px;
+            width:100%;
+            border:6px solid #6B4F3A;
+            box-shadow:0 20px 40px rgba(0,0,0,.7), inset 0 0 20px rgba(0,0,0,.2);
+            display:flex;
+            flex-direction:column;
+            min-height:580px;
+            position:relative;
+        }
+        .game::before{
+            content:'';
+            position:absolute;
+            top:0;left:0;right:0;bottom:0;
+            border-radius:24px;
+            background: repeating-linear-gradient(90deg, rgba(139,107,74,0.3) 0px, rgba(139,107,74,0.3) 4px, rgba(107,79,58,0.3) 4px, rgba(107,79,58,0.3) 8px);
+            pointer-events:none;
+            z-index:0;
+        }
+        .game>*{position:relative;z-index:1}
+
+        .back-btn{
+            background:#6B4F3A;
+            color:#f0d8b0;
+            border:none;
+            padding:6px;
+            border-radius:12px;
+            font-size:10px;
+            font-weight:700;
+            cursor:pointer;
+            margin-bottom:4px;
+            border:2px solid #4a3520;
+            box-shadow:0 3px 0 #3a2818;
+            width:100%;
+            text-shadow:0 1px 0 rgba(0,0,0,.3);
+        }
+        .back-btn:active{transform:translateY(3px);box-shadow:0 0px 0 #3a2818}
+
+        .stats{
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr 1fr;
+            gap:4px;
+            background:rgba(60,40,25,0.7);
+            padding:6px 10px;
+            border-radius:16px;
+            margin-bottom:6px;
+            border:2px solid #4a3520;
+            backdrop-filter:blur(4px);
+            box-shadow:inset 0 2px 10px rgba(0,0,0,.3);
+        }
+        .stat-item{
+            color:#f0d8b0;
+            font-weight:700;
+            font-size:8px;
+            text-align:center;
+            text-shadow:0 1px 3px rgba(0,0,0,.5);
+        }
+        .stat-item span{
+            color:#ffd700;
+            font-size:13px;
+            display:block;
+            text-shadow:0 0 10px rgba(255,215,0,.3);
+        }
+
+        .click-area{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:10px 0;
+            position:relative;
+        }
+        .click-area::before{
+            content:'🌿🌿🌿';
+            position:absolute;
+            bottom:0;
+            left:10%;
+            font-size:18px;
+            opacity:0.4;
+            letter-spacing:20px;
+        }
+        .click-area::after{
+            content:'🌸🌼🌸';
+            position:absolute;
+            top:0;
+            right:10%;
+            font-size:16px;
+            opacity:0.3;
+            letter-spacing:15px;
+        }
+
+        .click-btn{
+            width:150px;
+            height:150px;
+            border-radius:50%;
+            background:radial-gradient(circle at 35% 35%, #7cb342, #2e7d32);
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            cursor:pointer;
+            border:6px solid #4a3520;
+            box-shadow:0 8px 0 #2a1a0a, 0 15px 40px rgba(0,0,0,.5), inset 0 -10px 30px rgba(0,0,0,.3);
+            transition:all .08s;
+            position:relative;
+        }
+        .click-btn::after{
+            content:'';
+            position:absolute;
+            top:10px;
+            left:20%;
+            width:60%;
+            height:30%;
+            border-radius:50%;
+            background:radial-gradient(ellipse, rgba(255,255,255,0.3) 0%, transparent 70%);
+            pointer-events:none;
+        }
+        .click-btn:active{
+            transform:translateY(6px);
+            box-shadow:0 2px 0 #2a1a0a, 0 8px 20px rgba(0,0,0,.5);
+        }
+        .click-emoji{font-size:52px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
         .click-btn:active .click-emoji{transform:scale(.8)}
-        .click-hint{color:#d4ecd4;font-size:10px;margin-top:2px;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.5)}
-        .shop-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin:4px 0;max-height:140px;overflow-y:auto}
-        .shop-grid::-webkit-scrollbar{width:3px}
-        .shop-grid::-webkit-scrollbar-thumb{background:#4d8a4d;border-radius:8px}
-        .shop-btn{background:#1f4a1f;color:#e8f5d0;border:2px solid #4d8a4d;padding:3px 2px;border-radius:10px;font-weight:700;font-size:7px;cursor:pointer;transition:all .12s;text-align:center;line-height:1.1}
-        .shop-btn:active{transform:scale(.92);background:#123012}
+        .click-hint{
+            color:#f0f7d0;
+            font-size:10px;
+            margin-top:2px;
+            font-weight:700;
+            text-shadow:0 2px 8px rgba(0,0,0,.5);
+            background:rgba(0,0,0,.2);
+            padding:2px 12px;
+            border-radius:20px;
+        }
+
+        .shop-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr;
+            gap:4px;
+            margin:6px 0;
+            max-height:140px;
+            overflow-y:auto;
+            padding:4px;
+            background:rgba(60,40,25,0.4);
+            border-radius:12px;
+            border:1px solid #5a3f2a;
+        }
+        .shop-grid::-webkit-scrollbar{width:4px}
+        .shop-grid::-webkit-scrollbar-track{background:#3a2818;border-radius:4px}
+        .shop-grid::-webkit-scrollbar-thumb{background:#6B4F3A;border-radius:4px}
+
+        .shop-btn{
+            background:linear-gradient(145deg, #5a3f2a, #3a2818);
+            color:#f0d8b0;
+            border:2px solid #4a3520;
+            padding:4px 2px;
+            border-radius:10px;
+            font-weight:700;
+            font-size:7px;
+            cursor:pointer;
+            transition:all .12s;
+            text-align:center;
+            line-height:1.1;
+            box-shadow:0 3px 0 #2a1a0a;
+        }
+        .shop-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2a1a0a}
         .shop-btn.disabled{opacity:.4;filter:grayscale(.7);pointer-events:none}
         .shop-btn .price{color:#ffd700;display:block;font-size:6px}
-        .shop-btn .owned{color:#7fbf7f;display:block;font-size:6px}
+        .shop-btn .owned{color:#8aaa6a;display:block;font-size:6px}
         .shop-btn .bonus{color:#6fcfcf;display:block;font-size:6px}
-        .actions-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:4px 0}
-        .action-btn{background:#8f7a3a;color:#1e2a1e;border:none;padding:5px 0;border-radius:12px;font-weight:700;font-size:7px;cursor:pointer;border:2px solid #c4a84a;transition:all .12s}
-        .action-btn:active{transform:scale(.92);background:#6f5f2a}
-        .action-btn.gold{background:#c49a3a;border-color:#eac464}
-        .action-btn.blue{background:#4a6a9a;border-color:#6a9aca;color:#f0f7ff}
-        .action-btn.red{background:#7a3a3a;border-color:#aa5a5a;color:#f0d0d0}
-        .footer{color:#8aaa8a;text-align:center;font-size:7px;margin-top:3px}
+        .shop-btn.bought{border-color:#ffd700;background:linear-gradient(145deg, #4a6a2a, #2a4a1a)}
+
+        .actions-row{
+            display:grid;
+            grid-template-columns:1fr 1fr 1fr;
+            gap:4px;
+            margin:4px 0;
+        }
+        .action-btn{
+            background:linear-gradient(145deg, #6B4F3A, #4a3520);
+            color:#f0d8b0;
+            border:none;
+            padding:6px 0;
+            border-radius:12px;
+            font-weight:700;
+            font-size:7px;
+            cursor:pointer;
+            border:2px solid #5a3f2a;
+            box-shadow:0 3px 0 #2a1a0a;
+            transition:all .12s;
+            text-shadow:0 1px 0 rgba(0,0,0,.3);
+        }
+        .action-btn:active{transform:translateY(3px);box-shadow:0 0px 0 #2a1a0a}
+        .action-btn.gold{background:linear-gradient(145deg, #c49a3a, #8a6a2a);border-color:#eac464;color:#1e2a1e}
+        .action-btn.blue{background:linear-gradient(145deg, #4a6a9a, #2a4a7a);border-color:#6a9aca;color:#f0f7ff}
+        .action-btn.red{background:linear-gradient(145deg, #7a3a3a, #5a2a2a);border-color:#aa5a5a;color:#f0d0d0}
+
+        .footer{
+            color:#8a7a6a;
+            text-align:center;
+            font-size:7px;
+            margin-top:4px;
+            text-shadow:0 1px 2px rgba(0,0,0,.2);
+        }
         .footer.error{color:#ff6b6b}
         .footer.success{color:#6fcf6f}
-        .click-float{position:fixed;font-weight:700;font-size:28px;color:#ffd700;text-shadow:0 0 20px #ffa500,0 0 40px #ff6600;pointer-events:none;animation:floatUp 1s ease-out forwards;z-index:999}
+
+        /* Декорации */
+        .deco-clouds{
+            position:absolute;
+            top:5px;
+            left:0;
+            right:0;
+            height:30px;
+            overflow:hidden;
+            pointer-events:none;
+            z-index:0;
+            opacity:0.3;
+        }
+        .deco-clouds span{
+            position:absolute;
+            font-size:24px;
+            animation:cloudMove 20s linear infinite;
+        }
+        .deco-clouds span:nth-child(1){left:-10%;animation-duration:25s}
+        .deco-clouds span:nth-child(2){left:20%;animation-duration:30s;animation-delay:5s}
+        .deco-clouds span:nth-child(3){left:50%;animation-duration:22s;animation-delay:10s}
+        .deco-clouds span:nth-child(4){left:70%;animation-duration:28s;animation-delay:15s}
+
+        @keyframes cloudMove{
+            0%{transform:translateX(0)}
+            100%{transform:translateX(120vw)}
+        }
+        .deco-trees{
+            position:absolute;
+            bottom:0;
+            left:0;
+            right:0;
+            height:40px;
+            pointer-events:none;
+            z-index:0;
+            opacity:0.2;
+            font-size:28px;
+            display:flex;
+            justify-content:space-around;
+            padding:0 10px;
+        }
+
+        .click-float{
+            position:fixed;
+            font-weight:700;
+            font-size:28px;
+            color:#ffd700;
+            text-shadow:0 0 20px #ffa500, 0 0 40px #ff6600;
+            pointer-events:none;
+            animation:floatUp 1s ease-out forwards;
+            z-index:999;
+        }
         @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-120px) scale(1.5)}}
         .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
         .toast.show{opacity:1}
@@ -45,33 +282,48 @@
     </style>
 </head>
 <body>
+
     <div class="toast" id="toast">✅ Готово!</div>
+
     <div class="game">
+        <div class="deco-clouds">
+            <span>☁️</span><span>☁️</span><span>☁️</span><span>☁️</span>
+        </div>
+        <div class="deco-trees">
+            <span>🌳</span><span>🌲</span><span>🌳</span><span>🌲</span><span>🌳</span>
+        </div>
+
         <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+
         <div class="stats">
             <div class="stat-item">💰 <span id="money">0</span></div>
             <div class="stat-item">🌱 <span id="seeds">0</span></div>
             <div class="stat-item">⚡ <span id="cps">0</span></div>
             <div class="stat-item">👤 <span id="userName">Гость</span></div>
         </div>
+
         <div class="click-area">
             <div class="click-btn" id="clickBtn">
                 <div class="click-emoji">🧑‍🌾</div>
                 <div class="click-hint">👆 Тапай!</div>
             </div>
         </div>
+
         <div class="shop-grid" id="shopContainer"></div>
+
         <div class="actions-row">
             <button class="action-btn gold" id="prestigeBtn">✨ Перерождение</button>
             <button class="action-btn blue" id="autoClickBtn">🤖 Автокликер</button>
             <button class="action-btn red" id="resetBtn">🔄 Сброс</button>
         </div>
+
         <div class="footer" id="statusMsg">🌱 Сажай семена и собирай урожай!</div>
     </div>
+
     <script src="data.js"></script>
     <script>
         // ================================================================
-        //  КЛИКЕР
+        //  КЛИКЕР (ОБНОВЛЁННЫЙ)
         // ================================================================
 
         let currentUser = null;
@@ -307,12 +559,10 @@
             }
         }, 100);
 
-        // Автосохранение
         setInterval(saveState, 10000);
 
-        // Загрузка
         loadUser();
-        console.log('🌱 Кликер загружен!');
+        console.log('🌱 Кликер (обновлённый) загружен!');
     </script>
 </body>
-</html>
+    </html>
