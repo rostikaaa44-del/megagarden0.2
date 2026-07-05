@@ -48,10 +48,27 @@
         .toast.show{opacity:1}
         .toast.error{border-color:#ff6b6b;color:#ff6b6b}
         .empty-msg{color:#6a8a6a;text-align:center;padding:15px 0;font-size:10px}
+        .debug-btn{background:#4a6a9a;color:#fff;border:none;padding:4px 12px;border-radius:8px;font-size:9px;cursor:pointer;margin-top:4px;border:2px solid #6a9aca;width:100%}
+        .debug-btn:active{transform:scale(.95)}
+        .user-list-popup{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:3000;display:none;flex-direction:column;padding:20px;color:#e8f5d0}
+        .user-list-popup.active{display:flex}
+        .user-list-popup .close-popup{background:#7a3a3a;color:#fff;border:none;padding:8px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;border:2px solid #aa5a5a}
+        .user-list-popup .list-users{overflow-y:auto;flex:1;font-size:12px;line-height:1.8}
+        .user-list-popup .list-users .u-item{padding:4px 8px;border-bottom:1px solid #2a4a2a;display:flex;justify-content:space-between}
+        .user-list-popup .list-users .u-item .u-name{color:#ffd700}
+        .user-list-popup .list-users .u-item .u-status{color:#6a8a6a;font-size:10px}
     </style>
 </head>
 <body>
     <div class="toast" id="toast">✅ Готово!</div>
+
+    <!-- ===== ПОПАП СО ВСЕМИ ПОЛЬЗОВАТЕЛЯМИ ===== -->
+    <div class="user-list-popup" id="userListPopup">
+        <button class="close-popup" id="closePopup">✕ Закрыть</button>
+        <div style="color:#ffd700;font-size:16px;font-weight:700;margin-bottom:8px;">👥 Все пользователи</div>
+        <div class="list-users" id="allUsersList"></div>
+    </div>
+
     <div class="app">
         <div class="header">👥 МОИ ДРУЗЬЯ</div>
         <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
@@ -65,6 +82,8 @@
             <input type="text" id="friendInput" placeholder="👤 Введи ник друга">
             <button id="addFriendBtn">➕ Добавить</button>
         </div>
+
+        <button class="debug-btn" id="showUsersBtn">📋 Показать всех пользователей</button>
 
         <div id="requestsContainer"></div>
 
@@ -84,11 +103,21 @@
 
         <div class="footer" id="statusMsg">👥 Добавляй друзей и торгуй!</div>
     </div>
-    <script src="data.js"></script>
+
     <script>
         // ================================================================
-        //  ДРУЗЬЯ (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+        //  ДРУЗЬЯ — С КНОПКОЙ ДЛЯ ТЕЛЕФОНА
         // ================================================================
+
+        function getUsers() {
+            try { return JSON.parse(localStorage.getItem('gardenUsers')) || {}; } catch (e) { return {}; }
+        }
+
+        function saveUsers(u) { localStorage.setItem('gardenUsers', JSON.stringify(u)); }
+
+        function getCurrentUser() {
+            try { return JSON.parse(localStorage.getItem('gardenCurrentUser')); } catch (e) { return null; }
+        }
 
         let currentUser = null;
         let friends = [];
@@ -118,8 +147,16 @@
             }
             currentUser = user;
             document.getElementById('userName').textContent = user;
-            friends = getFriends(user);
-            friendRequests = getFriendRequests(user);
+
+            const users = getUsers();
+            if (users[user]) {
+                friends = users[user].friends || [];
+                friendRequests = users[user].friendRequests || [];
+            } else {
+                friends = [];
+                friendRequests = [];
+            }
+
             updateUI();
             document.getElementById('statusMsg').textContent = '👥 Добро пожаловать!';
             document.getElementById('statusMsg').className = 'footer';
@@ -130,7 +167,6 @@
             document.getElementById('friendsCount').textContent = friends.length;
             document.getElementById('requestsCount').textContent = friendRequests.length;
 
-            // Список друзей
             const list = document.getElementById('friendsList');
             list.innerHTML = '';
             if (friends.length === 0) {
@@ -159,7 +195,6 @@
                 });
             }
 
-            // Запросы
             const reqContainer = document.getElementById('requestsContainer');
             reqContainer.innerHTML = '';
             if (friendRequests.length > 0) {
@@ -191,53 +226,114 @@
             }
         }
 
-        // ===== ДОБАВЛЕНИЕ ДРУГА (ИСПРАВЛЕННАЯ ВЕРСИЯ) =====
+        // ===== КНОПКА "ПОКАЗАТЬ ВСЕХ" =====
+        document.getElementById('showUsersBtn').addEventListener('click', () => {
+            const users = getUsers();
+            const list = document.getElementById('allUsersList');
+            list.innerHTML = '';
+            const names = Object.keys(users);
+            if (names.length === 0) {
+                list.innerHTML = '<div style="color:#6a8a6a;">Нет зарегистрированных пользователей</div>';
+            } else {
+                names.forEach(name => {
+                    const div = document.createElement('div');
+                    div.className = 'u-item';
+                    const isFriend = friends.includes(name);
+                    const isCurrent = name === currentUser;
+                    div.innerHTML = `
+                        <span class="u-name">${name} ${isCurrent ? '👈 (это ты)' : ''}</span>
+                        <span class="u-status">${isFriend ? '✅ Друг' : '⬜ Не друг'}</span>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+            document.getElementById('userListPopup').classList.add('active');
+        });
+
+        document.getElementById('closePopup').addEventListener('click', () => {
+            document.getElementById('userListPopup').classList.remove('active');
+        });
+
+        // ===== ДОБАВЛЕНИЕ ДРУГА =====
         document.getElementById('addFriendBtn').addEventListener('click', () => {
             const input = document.getElementById('friendInput');
             const name = input.value.trim();
+
             if (!name) { showToast('⚠️ Введи ник!', true); return; }
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             if (name === currentUser) { showToast('❌ Нельзя добавить себя!', true); return; }
             if (friends.includes(name)) { showToast('❌ Уже в друзьях!', true); return; }
             if (friendRequests.includes(name)) { showToast('❌ Запрос уже отправлен!', true); return; }
 
-            // ПРОВЕРЯЕМ ВСЕХ ПОЛЬЗОВАТЕЛЕЙ
             const users = getUsers();
             if (!users[name]) {
-                showToast('❌ Пользователь не найден! Проверь ник.', true);
+                showToast(`❌ Пользователь "${name}" не найден!`, true);
+                // Подсказка: показать список всех
+                setTimeout(() => {
+                    if (confirm('Показать всех пользователей?')) {
+                        document.getElementById('showUsersBtn').click();
+                    }
+                }, 500);
                 return;
             }
 
-            // Отправляем запрос
             if (!users[name].friendRequests) users[name].friendRequests = [];
-            if (!users[name].friendRequests.includes(currentUser)) {
-                users[name].friendRequests.push(currentUser);
-                saveUsers(users);
-                showToast(`✅ Запрос отправлен ${name}!`, false);
-                input.value = '';
-                loadUser();
-            } else {
+            if (users[name].friendRequests.includes(currentUser)) {
                 showToast('❌ Запрос уже отправлен!', true);
+                return;
             }
+
+            users[name].friendRequests.push(currentUser);
+            saveUsers(users);
+            showToast(`✅ Запрос отправлен ${name}!`, false);
+            input.value = '';
+            loadUser();
         });
 
         function acceptFriend(fromUser) {
-            const result = acceptFriendRequest(currentUser, fromUser);
-            if (result.success) {
-                showToast(`✅ ${fromUser} теперь твой друг!`, false);
-                loadUser();
+            const users = getUsers();
+            if (!users[fromUser]) return;
+
+            friendRequests = friendRequests.filter(f => f !== fromUser);
+            if (!friends.includes(fromUser)) friends.push(fromUser);
+
+            users[currentUser].friends = friends;
+            users[currentUser].friendRequests = friendRequests;
+
+            if (!users[fromUser].friends) users[fromUser].friends = [];
+            if (!users[fromUser].friends.includes(currentUser)) {
+                users[fromUser].friends.push(currentUser);
             }
+            if (users[fromUser].friendRequests) {
+                users[fromUser].friendRequests = users[fromUser].friendRequests.filter(f => f !== currentUser);
+            }
+
+            saveUsers(users);
+            showToast(`✅ ${fromUser} теперь твой друг!`, false);
+            loadUser();
         }
 
         function declineFriend(fromUser) {
-            declineFriendRequest(currentUser, fromUser);
+            const users = getUsers();
+            friendRequests = friendRequests.filter(f => f !== fromUser);
+            users[currentUser].friendRequests = friendRequests;
+            saveUsers(users);
             showToast(`❌ Запрос от ${fromUser} отклонён`, true);
             loadUser();
         }
 
         function removeFriend(friendName) {
             if (!confirm(`Удалить ${friendName} из друзей?`)) return;
-            removeFriend(currentUser, friendName);
+            const users = getUsers();
+
+            friends = friends.filter(f => f !== friendName);
+            users[currentUser].friends = friends;
+
+            if (users[friendName] && users[friendName].friends) {
+                users[friendName].friends = users[friendName].friends.filter(f => f !== currentUser);
+            }
+
+            saveUsers(users);
             showToast(`❌ ${friendName} удалён`, true);
             loadUser();
         }
@@ -254,15 +350,18 @@
 
         document.getElementById('sendMoneyBtn').addEventListener('click', () => {
             if (!tradePartner) return;
-            const result = sendMoney(currentUser, tradePartner, 5);
-            if (result.success) {
-                const users = getUsers();
-                document.getElementById('myMoney').textContent = Math.floor(users[currentUser]?.state?.money || 0);
-                document.getElementById('friendMoney').textContent = Math.floor(users[tradePartner]?.state?.money || 0);
-                showToast(`✅ Отправлено 5💰 ${tradePartner}`, false);
-            } else {
-                showToast(`❌ ${result.error}`, true);
-            }
+            const users = getUsers();
+            if (!users[tradePartner]) { showToast('❌ Друг не найден!', true); return; }
+            const myMoney = users[currentUser]?.state?.money || 0;
+            if (myMoney < 5) { showToast('❌ Не хватает 5💰!', true); return; }
+
+            users[currentUser].state.money = myMoney - 5;
+            users[tradePartner].state.money = (users[tradePartner].state.money || 0) + 5;
+            saveUsers(users);
+
+            document.getElementById('myMoney').textContent = Math.floor(users[currentUser].state.money);
+            document.getElementById('friendMoney').textContent = Math.floor(users[tradePartner].state.money);
+            showToast(`✅ Отправлено 5💰 ${tradePartner}`, false);
         });
 
         document.getElementById('closeTradeBtn').addEventListener('click', () => {
@@ -271,7 +370,9 @@
         });
 
         loadUser();
-        console.log('👥 Друзья (исправленная версия) загружены!');
+        console.log('👥 Друзья загружены!');
+        console.log('Текущий пользователь:', currentUser);
+        console.log('Все пользователи в базе:', Object.keys(getUsers()));
     </script>
 </body>
-</html>
+            </html>
