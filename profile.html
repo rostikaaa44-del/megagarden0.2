@@ -6,78 +6,53 @@
     <title>👤 Профиль</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;user-select:none}
-        body{
-            background:#0f1f0f;
-            min-height:100vh;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            font-family:'Segoe UI',sans-serif;
-            padding:10px;
-            transition:background .3s;
-        }
-        .app{
-            background:#2d5a2d;
-            border-radius:30px;
-            padding:16px;
-            max-width:420px;
-            width:100%;
-            border:3px solid #4d8a4d;
-            box-shadow:0 20px 40px rgba(0,0,0,.7);
-            min-height:480px;
-            transition:background .3s, border-color .3s;
-        }
-        .app.theme-dark{background:#1a1a2e;border-color:#4a6a9a}
-        .app.theme-purple{background:#2a1a3a;border-color:#7a4a9a}
-        .app.theme-blue{background:#1a2a4a;border-color:#4a6a9a}
-        .app.theme-red{background:#3a1a1a;border-color:#9a4a4a}
-        .app.theme-gold{background:#3a2a1a;border-color:#c49a3a}
-        .app.theme-teal{background:#1a3a3a;border-color:#4a9a9a}
-        .app.theme-pink{background:#3a1a2a;border-color:#9a4a7a}
-        .app.theme-gray{background:#2a2a2a;border-color:#6a6a6a}
-
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:10px}
+        .app{background:#2d5a2d;border-radius:30px;padding:16px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);min-height:480px;position:relative}
         .header{color:#ffd700;font-size:20px;font-weight:700;text-align:center;margin-bottom:12px;border-bottom:2px solid #4d8a4d;padding-bottom:8px}
-        .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:rgba(0,0,0,.3);padding:8px;border-radius:16px;margin-bottom:12px;border:2px solid rgba(255,255,255,.1)}
+        .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#1f3f1f;padding:8px;border-radius:16px;margin-bottom:12px;border:2px solid #4d7a4d}
         .stat-item{color:#e8f5d0;font-weight:700;font-size:9px;text-align:center}
         .stat-item span{color:#ffd700;font-size:13px;display:block}
         .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:10px;border:2px solid #aa5a5a;width:100%}
         .back-btn:active{transform:scale(.95)}
-        .box{background:rgba(0,0,0,.3);border-radius:14px;padding:12px;border:2px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:6px}
-        .row{display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+        .box{background:#1a3a1a;border-radius:14px;padding:12px;border:2px solid #3d6a3d;display:flex;flex-direction:column;gap:6px}
+        .row{display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:10px;padding:5px 0;border-bottom:1px solid #2a4a2a}
         .row .label{color:#8aaa8a}
         .row .value{color:#ffd700;font-weight:700}
-        .btn{background:rgba(255,255,255,.1);color:#e8f5d0;border:2px solid rgba(255,255,255,.2);padding:6px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;text-align:center;transition:all .12s}
-        .btn:active{transform:scale(.95);background:rgba(255,255,255,.05)}
-        .btn.red{background:#7a3a3a;border-color:#aa5a5a;color:#f0d0d0}
+        .btn{background:#2a5a2a;color:#e8f5d0;border:2px solid #4d8a4d;padding:6px;border-radius:10px;font-size:9px;font-weight:700;cursor:pointer;text-align:center;transition:all .12s}
+        .btn:active{transform:scale(.95);background:#1a4a1a}
         .btn.gold{background:#c49a3a;border-color:#eac464;color:#1e2a1e}
-        .color-options{display:flex;gap:5px;flex-wrap:wrap;margin:4px 0}
-        .color-options .color-btn{
-            width:32px;
-            height:32px;
-            border-radius:50%;
-            border:3px solid rgba(255,255,255,.2);
-            cursor:pointer;
-            transition:all .12s;
-        }
-        .color-options .color-btn:active{transform:scale(.85)}
-        .color-options .color-btn.active{border-color:#ffd700;box-shadow:0 0 15px rgba(255,215,0,.4)}
+        .btn.red{background:#7a3a3a;border-color:#aa5a5a;color:#f0d0d0}
         .toggle-row{display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:9px;padding:4px 0}
         .toggle-row .toggle-label{color:#8aaa8a}
         .toggle-row .toggle-status{color:#ffd700;font-weight:700;font-size:10px}
         .toggle-row input[type=range]{width:100%;margin:4px 0;accent-color:#ffd700}
-        .ach-list{max-height:100px;overflow-y:auto;font-size:8px;color:#8aaa8a;padding:4px;background:rgba(0,0,0,.2);border-radius:8px;border:2px solid rgba(255,255,255,.05)}
-        .ach-list .ach-item{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between}
+        .ach-list{max-height:100px;overflow-y:auto;font-size:8px;color:#8aaa8a;padding:4px;background:#1a3a1a;border-radius:8px;border:2px solid #3d6a3d}
+        .ach-list .ach-item{padding:2px 0;border-bottom:1px solid #2a4a2a;display:flex;justify-content:space-between}
         .ach-list .ach-item.done{color:#ffd700}
         .footer{color:#8aaa8a;text-align:center;font-size:8px;margin-top:8px}
         .footer.error{color:#ff6b6b}
         .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
         .toast.show{opacity:1}
         .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+        .deco{position:absolute;font-size:24px;opacity:0.1;pointer-events:none}
+        .account-menu{background:#1f3f1f;border-radius:12px;padding:8px;border:2px solid #4d7a4d;margin-top:6px}
+        .account-menu .am-title{color:#8aaa8a;font-size:9px;font-weight:700;text-align:center;margin-bottom:4px}
+        .account-menu .am-btn{background:#2a5a2a;color:#e8f5d0;border:2px solid #4d8a4d;padding:6px;border-radius:8px;font-size:9px;font-weight:700;cursor:pointer;text-align:center;transition:all .12s;width:100%;margin:2px 0}
+        .account-menu .am-btn:active{transform:scale(.95);background:#1a4a1a}
+        .account-menu .am-btn.gold{background:#c49a3a;border-color:#eac464;color:#1e2a1e}
+        .account-menu .am-btn.red{background:#7a3a3a;border-color:#aa5a5a;color:#f0d0d0}
     </style>
 </head>
 <body>
     <div class="toast" id="toast">✅ Готово!</div>
-    <div class="app" id="appContainer">
+    <div class="app">
+        <div class="deco" style="top:10px;left:10px;">🌿</div>
+        <div class="deco" style="bottom:10px;right:10px;">🌻</div>
+        <div class="deco" style="top:50%;left:5px;">🌱</div>
+        <div class="deco" style="top:30%;right:5px;">🌸</div>
+        <div class="deco" style="bottom:30%;left:15px;">🍀</div>
+        <div class="deco" style="top:15%;right:15px;">🌺</div>
+
         <div class="header">👤 МОЙ ПРОФИЛЬ</div>
         <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
         <div class="stats">
@@ -93,30 +68,21 @@
             <div class="row"><span class="label">⚡ Доход</span><span class="value" id="profileCps">0</span></div>
             <div class="row"><span class="label">🏆 Перерождений</span><span class="value" id="profilePrestige">0</span></div>
 
-            <div style="margin:4px 0;">
-                <div style="color:#8aaa8a;font-size:7px;margin-bottom:2px;">🎨 Цвет интерфейса</div>
-                <div class="color-options" id="colorOptions">
-                    <div class="color-btn active" style="background:#2d5a2d;" data-theme="" data-color="#2d5a2d"></div>
-                    <div class="color-btn" style="background:#1a1a2e;" data-theme="dark" data-color="#1a1a2e"></div>
-                    <div class="color-btn" style="background:#2a1a3a;" data-theme="purple" data-color="#2a1a3a"></div>
-                    <div class="color-btn" style="background:#1a2a4a;" data-theme="blue" data-color="#1a2a4a"></div>
-                    <div class="color-btn" style="background:#3a1a1a;" data-theme="red" data-color="#3a1a1a"></div>
-                    <div class="color-btn" style="background:#3a2a1a;" data-theme="gold" data-color="#3a2a1a"></div>
-                    <div class="color-btn" style="background:#1a3a3a;" data-theme="teal" data-color="#1a3a3a"></div>
-                    <div class="color-btn" style="background:#3a1a2a;" data-theme="pink" data-color="#3a1a2a"></div>
-                    <div class="color-btn" style="background:#2a2a2a;" data-theme="gray" data-color="#2a2a2a"></div>
-                </div>
-            </div>
-
             <div class="toggle-row">
                 <span class="toggle-label">⚡ Режим производительности</span>
                 <span class="toggle-status" id="perfStatus">ВЫКЛ</span>
             </div>
             <input type="range" min="0" max="1" step="1" id="perfToggle" value="0">
 
+            <div class="account-menu">
+                <div class="am-title">🔑 УПРАВЛЕНИЕ АККАУНТАМИ</div>
+                <button class="am-btn gold" id="switchAccountBtn">🔄 Переключиться на другой аккаунт</button>
+                <button class="am-btn" id="createNewAccountBtn">➕ Создать новый аккаунт</button>
+                <button class="am-btn red" id="logoutBtn">🚪 Выйти из аккаунта</button>
+            </div>
+
             <button class="btn gold" id="changeNickBtn">✏️ Сменить ник</button>
             <button class="btn gold" id="changePassBtn">🔒 Сменить пароль</button>
-            <button class="btn red" id="loginBtn">🔑 Войти / Создать аккаунт</button>
 
             <div style="margin-top:4px;">
                 <div style="color:#8aaa8a;font-size:7px;margin-bottom:2px;">🏅 Достижения</div>
@@ -129,7 +95,7 @@
     <script src="data.js"></script>
     <script>
         // ================================================================
-        //  ПРОФИЛЬ (ОБНОВЛЁННЫЙ)
+        //  ПРОФИЛЬ (С ПЕРЕКЛЮЧЕНИЕМ АККАУНТОВ)
         // ================================================================
 
         let currentUser = null;
@@ -143,7 +109,7 @@
             setTimeout(() => el.classList.remove('show'), 2500);
         }
 
-        function loadUser() {
+        async function loadUser() {
             const user = getCurrentUser();
             if (!user) {
                 currentUser = null;
@@ -155,14 +121,13 @@
                 document.getElementById('profileSeeds').textContent = '0';
                 document.getElementById('profileCps').textContent = '0';
                 document.getElementById('profilePrestige').textContent = '0';
-                document.getElementById('loginBtn').textContent = '🔑 Войти / Создать аккаунт';
                 document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт!';
                 document.getElementById('statusMsg').className = 'footer error';
                 document.getElementById('achList').innerHTML = '';
                 return false;
             }
             currentUser = user;
-            const userState = getUserState(user);
+            const userState = await getUserState(user);
             state = userState || {};
             document.getElementById('userName').textContent = user;
             document.getElementById('profileNick').textContent = user;
@@ -173,7 +138,6 @@
             const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1);
             document.getElementById('profileCps').textContent = cps.toFixed(1);
             document.getElementById('profilePrestige').textContent = state.prestigeLevel || 0;
-            document.getElementById('loginBtn').textContent = '🚪 Выйти';
             document.getElementById('statusMsg').textContent = `👋 Привет, ${user}!`;
             document.getElementById('statusMsg').className = 'footer';
 
@@ -187,21 +151,14 @@
                 '10 семян', '30 семян',
                 '1 перерождение', '5 перерождений',
                 '5 автокликеров', '10 автокликеров',
-                'Победа в три в ряд', 'Побег от Cool Kid'
+                'Победа в три в ряд', 'Побег от Cool Kid',
+                'Flappy Bird', 'Змейка', 'Пятнашки'
             ];
             allAch.forEach(name => {
                 const div = document.createElement('div');
                 div.className = 'ach-item' + (achievements.includes(name) ? ' done' : '');
                 div.textContent = `${achievements.includes(name) ? '✅' : '⬜'} ${name}`;
                 list.appendChild(div);
-            });
-
-            // Цвет интерфейса
-            const theme = state.theme || '';
-            const app = document.getElementById('appContainer');
-            app.className = 'app' + (theme ? ' theme-' + theme : '');
-            document.querySelectorAll('.color-btn').forEach(b => {
-                b.classList.toggle('active', b.dataset.theme === theme);
             });
 
             // Режим производительности
@@ -216,21 +173,6 @@
                 saveUserState(currentUser, state);
             }
         }
-
-        // ---- ЦВЕТ ИНТЕРФЕЙСА ----
-        document.querySelectorAll('.color-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
-                const theme = this.dataset.theme;
-                state.theme = theme;
-                const app = document.getElementById('appContainer');
-                app.className = 'app' + (theme ? ' theme-' + theme : '');
-                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                saveState();
-                showToast('🎨 Цвет интерфейса изменён!', false);
-            });
-        });
 
         // ---- РЕЖИМ ПРОИЗВОДИТЕЛЬНОСТИ ----
         document.getElementById('perfToggle').addEventListener('input', function() {
@@ -269,49 +211,55 @@
             showToast('✅ Пароль изменён!', false);
         });
 
-        // ---- ВХОД / ВЫХОД ----
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            if (currentUser) {
-                if (confirm('Выйти из аккаунта?')) {
-                    logoutUser();
-                    loadUser();
-                    showToast('👋 До встречи!', false);
-                }
+        // ---- ПЕРЕКЛЮЧЕНИЕ МЕЖДУ АККАУНТАМИ ----
+        document.getElementById('switchAccountBtn').addEventListener('click', async () => {
+            const users = getUsers();
+            const names = Object.keys(users);
+            if (names.length === 0) {
+                showToast('❌ Нет других аккаунтов!', true);
                 return;
             }
-            const action = prompt('Введите 1 для входа, 2 для регистрации:');
-            if (action === '1') {
-                const login = prompt('👤 Имя:');
-                if (!login) return;
-                const pass = prompt('🔒 Пароль:');
-                if (!pass) return;
-                const result = loginUser(login, pass);
-                if (result.success) {
-                    loadUser();
-                    showToast('✅ Добро пожаловать!', false);
-                    location.reload();
-                } else {
-                    showToast(`❌ ${result.error}`, true);
-                }
-            } else if (action === '2') {
-                const login = prompt('👤 Придумайте имя:');
-                if (!login) return;
-                const pass = prompt('🔒 Придумайте пароль:');
-                if (!pass) return;
-                const result = createAccount(login, pass);
-                if (result.success) {
-                    setCurrentUser(login);
-                    loadUser();
-                    showToast('✅ Аккаунт создан!', false);
-                    location.reload();
-                } else {
-                    showToast(`❌ ${result.error}`, true);
-                }
+            const currentName = getCurrentUser();
+            const list = names.map((n, i) => `${i+1}. ${n}${n === currentName ? ' (текущий)' : ''}`).join('\n');
+            const choice = prompt(`Выбери аккаунт:\n${list}\n\nВведи номер:`);
+            if (!choice) return;
+            const idx = parseInt(choice) - 1;
+            if (idx < 0 || idx >= names.length) { showToast('❌ Неверный номер!', true); return; }
+            const selected = names[idx];
+            if (selected === currentName) { showToast('⚠️ Ты уже в этом аккаунте', true); return; }
+            setCurrentUser(selected);
+            loadUser();
+            showToast(`🔄 Переключено на ${selected}`, false);
+        });
+
+        // ---- СОЗДАТЬ НОВЫЙ АККАУНТ ----
+        document.getElementById('createNewAccountBtn').addEventListener('click', async () => {
+            const login = prompt('👤 Придумайте имя:');
+            if (!login || login.trim() === '') return;
+            const pass = prompt('🔒 Придумайте пароль:');
+            if (!pass || pass.trim() === '') return;
+            const result = await createAccount(login.trim(), pass.trim());
+            if (result.success) {
+                setCurrentUser(login.trim());
+                loadUser();
+                showToast('✅ Аккаунт создан и выбран!', false);
+            } else {
+                showToast(`❌ ${result.error}`, true);
+            }
+        });
+
+        // ---- ВЫХОД ----
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (!currentUser) { showToast('⚠️ Ты не в аккаунте', true); return; }
+            if (confirm('Выйти из аккаунта?')) {
+                setCurrentUser(null);
+                loadUser();
+                showToast('👋 До встречи!', false);
             }
         });
 
         loadUser();
-        console.log('👤 Профиль (обновлённый) загружен!');
+        console.log('👤 Профиль загружен!');
     </script>
 </body>
     </html>
