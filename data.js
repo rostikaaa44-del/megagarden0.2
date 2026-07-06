@@ -1,10 +1,11 @@
 // ================================================================
-//  data.js — ЛОКАЛЬНАЯ БАЗА ДАННЫХ (РАБОТАЕТ 100%)
+//  data.js — ЛОКАЛЬНАЯ БАЗА ДАННЫХ (ГАРАНТИРОВАННО РАБОТАЕТ)
 // ================================================================
 
 let currentUser = null;
 let audioCtx = null;
 
+// ===== БАЗА ДАННЫХ =====
 function getUsers() {
     try { return JSON.parse(localStorage.getItem('gardenUsers')) || {}; } catch (e) { return {}; }
 }
@@ -42,6 +43,7 @@ function createAccount(username, password) {
             matchRecord: 0,
             clickMultiplier: 1,
             prefMode: false,
+            bgColor: '#0f1f0f',
             coolkidWins: 0,
         },
         friends: [],
@@ -243,4 +245,4 @@ function playSound(type) {
     } catch (e) { /* тихо */ }
 }
 
-console.log('📦 data.js (локальная) загружена!');
+console.log('✅ data.js загружен! Все функции доступны.');
