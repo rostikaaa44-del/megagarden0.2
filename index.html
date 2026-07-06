@@ -14,21 +14,28 @@
         .user-info .name span{color:#ffd700}
         .user-info .money{color:#ffd700;font-size:14px;font-weight:700}
         .game-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
-        .game-btn{background:#1f4a1f;color:#e8f5d0;border:2px solid #4d8a4d;border-radius:16px;padding:16px 8px;font-size:12px;font-weight:700;cursor:pointer;text-align:center;transition:all .12s}
+        .game-btn{background:#1f4a1f;color:#e8f5d0;border:2px solid #4d8a4d;border-radius:16px;padding:16px 8px;font-size:11px;font-weight:700;cursor:pointer;text-align:center;transition:all .12s}
         .game-btn:active{transform:scale(.95);background:#123012}
         .game-btn .emoji{font-size:28px;display:block;margin-bottom:4px}
         .game-btn.gold{border-color:#ffd700}
+        .game-btn.purple{border-color:#9a6aca}
         .auth-btn{background:#6ab04a;color:#1e2a1e;border:none;padding:10px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;border:2px solid #5aaa5a}
         .auth-btn:active{transform:scale(.95)}
         .auth-btn.red{background:#7a3a3a;color:#f0d0d0;border-color:#aa5a5a}
         .footer{color:#8aaa8a;text-align:center;font-size:8px;margin-top:12px}
         .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
         .toast.show{opacity:1}
+        .deco{position:absolute;font-size:20px;opacity:0.1;pointer-events:none}
     </style>
 </head>
 <body>
     <div class="toast" id="toast">✅ Готово!</div>
-    <div class="app">
+    <div class="app" style="position:relative;">
+        <div class="deco" style="top:10px;left:10px;">🌿</div>
+        <div class="deco" style="bottom:10px;right:10px;">🌻</div>
+        <div class="deco" style="top:50%;left:5px;">🌱</div>
+        <div class="deco" style="top:30%;right:5px;">🌸</div>
+
         <div class="header">🌱 САД-КЛИКЕР</div>
         <div class="user-info" id="userInfo">
             <div class="name">👤 <span id="userName">Гость</span></div>
@@ -36,24 +43,26 @@
         </div>
         <div class="game-grid">
             <div class="game-btn gold" onclick="location.href='clicker.html'">
-                <span class="emoji">🧑‍🌾</span>
-                Сад-Кликер
-                <span style="font-size:8px;color:#8aaa8a;display:block;">Тапай и сажай!</span>
+                <span class="emoji">🧑‍🌾</span>Сад-Кликер
             </div>
             <div class="game-btn" onclick="location.href='escape.html'">
-                <span class="emoji">🏃</span>
-                Побег от Cool Kid
-                <span style="font-size:8px;color:#8aaa8a;display:block;">5 раундов</span>
+                <span class="emoji">🏃</span>Побег
             </div>
             <div class="game-btn" onclick="location.href='match3.html'">
-                <span class="emoji">🍎</span>
-                Три в ряд
-                <span style="font-size:8px;color:#8aaa8a;display:block;">Собирай комбинации</span>
+                <span class="emoji">🍎</span>Три в ряд
             </div>
-            <div class="game-btn" onclick="location.href='friends.html'">
-                <span class="emoji">👥</span>
-                Друзья
-                <span style="font-size:8px;color:#8aaa8a;display:block;">Добавляй и торгуй</span>
+            <div class="game-btn purple" onclick="location.href='friends.html'">
+                <span class="emoji">👥</span>Друзья
+            </div>
+            <!-- НОВЫЕ ИГРЫ -->
+            <div class="game-btn" onclick="location.href='flappy.html'" style="border-color:#ff6b6b;">
+                <span class="emoji">🐦</span>Flappy Bird
+            </div>
+            <div class="game-btn" onclick="location.href='snake.html'" style="border-color:#6bcf6b;">
+                <span class="emoji">🐍</span>Змейка
+            </div>
+            <div class="game-btn" onclick="location.href='puzzle.html'" style="border-color:#6b6bcf;">
+                <span class="emoji">🧩</span>Пятнашки
             </div>
         </div>
         <button class="auth-btn" id="profileBtn" onclick="location.href='profile.html'">👤 Мой профиль</button>
@@ -71,13 +80,13 @@
             setTimeout(() => el.classList.remove('show'), 2500);
         }
 
-        function updateUI() {
+        async function updateUI() {
             const user = getCurrentUser();
             const nameEl = document.getElementById('userName');
             const moneyEl = document.getElementById('userMoney');
             const statusEl = document.getElementById('statusMsg');
             if (user) {
-                const state = getUserState(user);
+                const state = await getUserState(user);
                 nameEl.textContent = user;
                 moneyEl.textContent = Math.floor(state?.money || 0);
                 statusEl.textContent = `👋 Привет, ${user}!`;
@@ -94,7 +103,7 @@
             const user = getCurrentUser();
             if (user) {
                 if (confirm('Выйти из аккаунта?')) {
-                    logoutUser();
+                    setCurrentUser(null);
                     showToast('👋 До встречи!', false);
                     updateUI();
                 }
@@ -107,4 +116,4 @@
         console.log('🏠 Главное меню загружено!');
     </script>
 </body>
-</html>
+                                            </html>
