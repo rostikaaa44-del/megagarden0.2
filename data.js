@@ -1,11 +1,7 @@
 // ================================================================
-//  data.js — ЛОКАЛЬНАЯ БАЗА ДАННЫХ (ГАРАНТИРОВАННО РАБОТАЕТ)
+//  data.js — САМАЯ ПРОСТАЯ ВЕРСИЯ (100% РАБОТАЕТ)
 // ================================================================
 
-let currentUser = null;
-let audioCtx = null;
-
-// ===== БАЗА ДАННЫХ =====
 function getUsers() {
     try { return JSON.parse(localStorage.getItem('gardenUsers')) || {}; } catch (e) { return {}; }
 }
@@ -24,28 +20,9 @@ function setCurrentUser(u) {
 function createAccount(username, password) {
     const users = getUsers();
     if (users[username]) return { success: false, error: 'Имя уже занято!' };
-    if (username.length < 2) return { success: false, error: 'Имя слишком короткое!' };
-    if (password.length < 1) return { success: false, error: 'Введите пароль!' };
     users[username] = {
         password: password,
-        state: {
-            money: 0,
-            seeds: 0,
-            prestigeLevel: 0,
-            prestigeBonus: 1,
-            autoClickers: 0,
-            autoClickLevel: 1,
-            totalClicks: 0,
-            totalMoneyEarned: 0,
-            achievements: [],
-            seedInventory: {},
-            clickBonus: 0,
-            matchRecord: 0,
-            clickMultiplier: 1,
-            prefMode: false,
-            bgColor: '#0f1f0f',
-            coolkidWins: 0,
-        },
+        state: { money: 0, seeds: 0, prestigeLevel: 0, prestigeBonus: 1, autoClickers: 0, autoClickLevel: 1, totalClicks: 0, totalMoneyEarned: 0, achievements: [], seedInventory: {}, clickBonus: 0, matchRecord: 0, clickMultiplier: 1, prefMode: false, coolkidWins: 0 },
         friends: [],
         friendRequests: []
     };
@@ -60,8 +37,6 @@ function loginUser(username, password) {
     setCurrentUser(username);
     return { success: true };
 }
-
-function logoutUser() { setCurrentUser(null); }
 
 function getUserState(username) {
     const users = getUsers();
@@ -93,12 +68,8 @@ function sendFriendRequest(fromUser, toUser) {
     if (!users[toUser]) return { success: false, error: 'Пользователь не найден!' };
     const friends = getFriends(fromUser);
     if (friends.includes(toUser)) return { success: false, error: 'Уже в друзьях!' };
-    const requests = getFriendRequests(fromUser);
-    if (requests.includes(toUser)) return { success: false, error: 'Запрос уже отправлен!' };
     if (!users[toUser].friendRequests) users[toUser].friendRequests = [];
-    if (users[toUser].friendRequests.includes(fromUser)) {
-        return { success: false, error: 'Запрос уже отправлен!' };
-    }
+    if (users[toUser].friendRequests.includes(fromUser)) return { success: false, error: 'Запрос уже отправлен!' };
     users[toUser].friendRequests.push(fromUser);
     saveUsers(users);
     return { success: true };
@@ -152,7 +123,7 @@ function sendMoney(fromUser, toUser, amount = 5) {
 }
 
 function checkAchievements(state) {
-    const ACHIEVEMENTS_LIST = [
+    const list = [
         { id: 'first_click', name: 'Первый клик', check: () => state.totalClicks >= 1 },
         { id: 'click_100', name: '100 кликов', check: () => state.totalClicks >= 100 },
         { id: 'click_1000', name: '1000 кликов', check: () => state.totalClicks >= 1000 },
@@ -170,7 +141,7 @@ function checkAchievements(state) {
         { id: 'coolkid_5', name: '5 побегов от Cool Kid', check: () => state.coolkidWins >= 5 },
     ];
     const newAchievements = [];
-    ACHIEVEMENTS_LIST.forEach(a => {
+    list.forEach(a => {
         if (!state.achievements.includes(a.id) && a.check()) {
             state.achievements.push(a.id);
             newAchievements.push(a);
@@ -181,68 +152,18 @@ function checkAchievements(state) {
 
 function playSound(type) {
     try {
-        if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const ctx = new(window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(ctx.destination);
         gain.gain.value = 0.08;
-        if (type === 'click') {
-            osc.frequency.value = 800;
-            osc.type = 'sine';
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.05);
-        } else if (type === 'buy') {
-            osc.frequency.value = 600;
-            osc.type = 'square';
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.08);
-        } else if (type === 'achievement') {
-            osc.frequency.value = 1000;
-            osc.type = 'sine';
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-            osc.start();
-            setTimeout(() => {
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-                gain2.gain.value = 0.08;
-                osc2.frequency.value = 1300;
-                osc2.type = 'sine';
-                gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-                osc2.start();
-                osc2.stop(audioCtx.currentTime + 0.1);
-            }, 100);
-            osc.stop(audioCtx.currentTime + 0.1);
-        } else if (type === 'round') {
-            osc.frequency.value = 500;
-            osc.type = 'sawtooth';
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.3);
-        } else if (type === 'prestige') {
-            osc.frequency.value = 400;
-            osc.type = 'sine';
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
-            osc.start();
-            setTimeout(() => {
-                const osc2 = audioCtx.createOscillator();
-                const gain2 = audioCtx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(audioCtx.destination);
-                gain2.gain.value = 0.08;
-                osc2.frequency.value = 700;
-                osc2.type = 'sine';
-                gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-                osc2.start();
-                osc2.stop(audioCtx.currentTime + 0.3);
-            }, 150);
-            osc.stop(audioCtx.currentTime + 0.5);
-        }
+        osc.frequency.value = type === 'click' ? 800 : 600;
+        osc.type = 'sine';
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
     } catch (e) { /* тихо */ }
 }
 
-console.log('✅ data.js загружен! Все функции доступны.');
+console.log('✅ data.js загружен!');
