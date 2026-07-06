@@ -6,324 +6,99 @@
     <title>🌱 Сад-Кликер</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;user-select:none}
-        body{
-            background: #87CEEB;
-            min-height:100vh;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            font-family:'Segoe UI',sans-serif;
-            padding:8px;
-            background-image: linear-gradient(180deg, #87CEEB 0%, #87CEEB 60%, #4a8f4a 60%, #3d7a3d 100%);
-        }
-        .game{
-            background: #8B6B4A;
-            border-radius:30px;
-            padding:12px;
-            max-width:420px;
-            width:100%;
-            border:6px solid #6B4F3A;
-            box-shadow:0 20px 40px rgba(0,0,0,.7), inset 0 0 20px rgba(0,0,0,.2);
-            display:flex;
-            flex-direction:column;
-            min-height:580px;
-            position:relative;
-        }
-        .game::before{
-            content:'';
-            position:absolute;
-            top:0;left:0;right:0;bottom:0;
-            border-radius:24px;
-            background: repeating-linear-gradient(90deg, rgba(139,107,74,0.3) 0px, rgba(139,107,74,0.3) 4px, rgba(107,79,58,0.3) 4px, rgba(107,79,58,0.3) 8px);
-            pointer-events:none;
-            z-index:0;
-        }
-        .game>*{position:relative;z-index:1}
-
-        .back-btn{
-            background:#6B4F3A;
-            color:#f0d8b0;
-            border:none;
-            padding:6px;
-            border-radius:12px;
-            font-size:10px;
-            font-weight:700;
-            cursor:pointer;
-            margin-bottom:4px;
-            border:2px solid #4a3520;
-            box-shadow:0 3px 0 #3a2818;
-            width:100%;
-            text-shadow:0 1px 0 rgba(0,0,0,.3);
-        }
-        .back-btn:active{transform:translateY(3px);box-shadow:0 0px 0 #3a2818}
-
-        .stats{
-            display:grid;
-            grid-template-columns:1fr 1fr 1fr 1fr;
-            gap:4px;
-            background:rgba(60,40,25,0.7);
-            padding:6px 10px;
-            border-radius:16px;
-            margin-bottom:6px;
-            border:2px solid #4a3520;
-            backdrop-filter:blur(4px);
-            box-shadow:inset 0 2px 10px rgba(0,0,0,.3);
-        }
-        .stat-item{
-            color:#f0d8b0;
-            font-weight:700;
-            font-size:8px;
-            text-align:center;
-            text-shadow:0 1px 3px rgba(0,0,0,.5);
-        }
-        .stat-item span{
-            color:#ffd700;
-            font-size:13px;
-            display:block;
-            text-shadow:0 0 10px rgba(255,215,0,.3);
-        }
-
-        .click-area{
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            padding:10px 0;
-            position:relative;
-        }
-        .click-area::before{
-            content:'🌿🌿🌿';
-            position:absolute;
-            bottom:0;
-            left:10%;
-            font-size:18px;
-            opacity:0.4;
-            letter-spacing:20px;
-        }
-        .click-area::after{
-            content:'🌸🌼🌸';
-            position:absolute;
-            top:0;
-            right:10%;
-            font-size:16px;
-            opacity:0.3;
-            letter-spacing:15px;
-        }
-
-        .click-btn{
-            width:150px;
-            height:150px;
-            border-radius:50%;
-            background:radial-gradient(circle at 35% 35%, #7cb342, #2e7d32);
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:center;
-            cursor:pointer;
-            border:6px solid #4a3520;
-            box-shadow:0 8px 0 #2a1a0a, 0 15px 40px rgba(0,0,0,.5), inset 0 -10px 30px rgba(0,0,0,.3);
-            transition:all .08s;
-            position:relative;
-        }
-        .click-btn::after{
-            content:'';
-            position:absolute;
-            top:10px;
-            left:20%;
-            width:60%;
-            height:30%;
-            border-radius:50%;
-            background:radial-gradient(ellipse, rgba(255,255,255,0.3) 0%, transparent 70%);
-            pointer-events:none;
-        }
-        .click-btn:active{
-            transform:translateY(6px);
-            box-shadow:0 2px 0 #2a1a0a, 0 8px 20px rgba(0,0,0,.5);
-        }
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:8px}
+        .game{background:#2d5a2d;border-radius:30px;padding:12px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;min-height:580px}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:4px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .stats{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:4px;background:#1f3f1f;padding:6px 10px;border-radius:16px;margin-bottom:6px;border:2px solid #4d7a4d}
+        .stat-item{color:#e8f5d0;font-weight:700;font-size:8px;text-align:center}
+        .stat-item span{color:#ffd700;font-size:13px;display:block}
+        .click-area{display:flex;justify-content:center;align-items:center;padding:10px 0}
+        .click-btn{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#6ab04a,#1f4a1f);display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;border:4px solid #8fc98f;box-shadow:0 8px 0 #0f2a0f,0 15px 40px rgba(0,0,0,.5);transition:all .08s}
+        .click-btn:active{transform:translateY(6px);box-shadow:0 2px 0 #0f2a0f,0 8px 20px rgba(0,0,0,.5)}
         .click-emoji{font-size:52px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
         .click-btn:active .click-emoji{transform:scale(.8)}
-        .click-hint{
-            color:#f0f7d0;
-            font-size:10px;
-            margin-top:2px;
-            font-weight:700;
-            text-shadow:0 2px 8px rgba(0,0,0,.5);
-            background:rgba(0,0,0,.2);
-            padding:2px 12px;
-            border-radius:20px;
-        }
-
-        .shop-grid{
-            display:grid;
-            grid-template-columns:1fr 1fr 1fr;
-            gap:4px;
-            margin:6px 0;
-            max-height:140px;
-            overflow-y:auto;
-            padding:4px;
-            background:rgba(60,40,25,0.4);
-            border-radius:12px;
-            border:1px solid #5a3f2a;
-        }
+        .click-hint{color:#d4ecd4;font-size:10px;margin-top:2px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.5);background:rgba(0,0,0,.2);padding:2px 12px;border-radius:20px}
+        .shop-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:6px 0;max-height:140px;overflow-y:auto;padding:4px;background:rgba(0,0,0,.2);border-radius:12px;border:1px solid rgba(255,255,255,.1)}
         .shop-grid::-webkit-scrollbar{width:4px}
-        .shop-grid::-webkit-scrollbar-track{background:#3a2818;border-radius:4px}
-        .shop-grid::-webkit-scrollbar-thumb{background:#6B4F3A;border-radius:4px}
-
-        .shop-btn{
-            background:linear-gradient(145deg, #5a3f2a, #3a2818);
-            color:#f0d8b0;
-            border:2px solid #4a3520;
-            padding:4px 2px;
-            border-radius:10px;
-            font-weight:700;
-            font-size:7px;
-            cursor:pointer;
-            transition:all .12s;
-            text-align:center;
-            line-height:1.1;
-            box-shadow:0 3px 0 #2a1a0a;
-        }
-        .shop-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #2a1a0a}
+        .shop-grid::-webkit-scrollbar-track{background:rgba(0,0,0,.3);border-radius:4px}
+        .shop-grid::-webkit-scrollbar-thumb{background:#4d8a4d;border-radius:4px}
+        .shop-btn{background:rgba(0,0,0,.3);color:#e8f5d0;border:2px solid rgba(255,255,255,.1);padding:4px 2px;border-radius:10px;font-weight:700;font-size:7px;cursor:pointer;transition:all .12s;text-align:center;line-height:1.1}
+        .shop-btn:active{transform:scale(.95);background:rgba(0,0,0,.4)}
         .shop-btn.disabled{opacity:.4;filter:grayscale(.7);pointer-events:none}
         .shop-btn .price{color:#ffd700;display:block;font-size:6px}
         .shop-btn .owned{color:#8aaa6a;display:block;font-size:6px}
         .shop-btn .bonus{color:#6fcfcf;display:block;font-size:6px}
-        .shop-btn.bought{border-color:#ffd700;background:linear-gradient(145deg, #4a6a2a, #2a4a1a)}
-
-        .actions-row{
-            display:grid;
-            grid-template-columns:1fr 1fr 1fr;
-            gap:4px;
-            margin:4px 0;
-        }
-        .action-btn{
-            background:linear-gradient(145deg, #6B4F3A, #4a3520);
-            color:#f0d8b0;
-            border:none;
-            padding:6px 0;
-            border-radius:12px;
-            font-weight:700;
-            font-size:7px;
-            cursor:pointer;
-            border:2px solid #5a3f2a;
-            box-shadow:0 3px 0 #2a1a0a;
-            transition:all .12s;
-            text-shadow:0 1px 0 rgba(0,0,0,.3);
-        }
-        .action-btn:active{transform:translateY(3px);box-shadow:0 0px 0 #2a1a0a}
-        .action-btn.gold{background:linear-gradient(145deg, #c49a3a, #8a6a2a);border-color:#eac464;color:#1e2a1e}
-        .action-btn.blue{background:linear-gradient(145deg, #4a6a9a, #2a4a7a);border-color:#6a9aca;color:#f0f7ff}
-        .action-btn.red{background:linear-gradient(145deg, #7a3a3a, #5a2a2a);border-color:#aa5a5a;color:#f0d0d0}
-
-        .footer{
-            color:#8a7a6a;
-            text-align:center;
-            font-size:7px;
-            margin-top:4px;
-            text-shadow:0 1px 2px rgba(0,0,0,.2);
-        }
+        .shop-btn.bought{border-color:#ffd700;background:rgba(255,215,0,.1)}
+        .actions-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:4px 0}
+        .action-btn{background:rgba(0,0,0,.3);color:#e8f5d0;border:none;padding:6px 0;border-radius:12px;font-weight:700;font-size:7px;cursor:pointer;border:2px solid rgba(255,255,255,.1);transition:all .12s}
+        .action-btn:active{transform:scale(.95);background:rgba(0,0,0,.4)}
+        .action-btn.gold{background:rgba(255,215,0,.2);border-color:#ffd700;color:#ffd700}
+        .action-btn.blue{background:rgba(74,106,154,.3);border-color:#4a6a9a;color:#f0f7ff}
+        .action-btn.red{background:rgba(122,58,58,.3);border-color:#7a3a3a;color:#f0d0d0}
+        .action-btn.purple{background:rgba(154,106,202,.3);border-color:#9a6aca;color:#f0d0ff}
+        .footer{color:#8aaa8a;text-align:center;font-size:7px;margin-top:4px}
         .footer.error{color:#ff6b6b}
         .footer.success{color:#6fcf6f}
-
-        /* Декорации */
-        .deco-clouds{
-            position:absolute;
-            top:5px;
-            left:0;
-            right:0;
-            height:30px;
-            overflow:hidden;
-            pointer-events:none;
-            z-index:0;
-            opacity:0.3;
-        }
-        .deco-clouds span{
-            position:absolute;
-            font-size:24px;
-            animation:cloudMove 20s linear infinite;
-        }
-        .deco-clouds span:nth-child(1){left:-10%;animation-duration:25s}
-        .deco-clouds span:nth-child(2){left:20%;animation-duration:30s;animation-delay:5s}
-        .deco-clouds span:nth-child(3){left:50%;animation-duration:22s;animation-delay:10s}
-        .deco-clouds span:nth-child(4){left:70%;animation-duration:28s;animation-delay:15s}
-
-        @keyframes cloudMove{
-            0%{transform:translateX(0)}
-            100%{transform:translateX(120vw)}
-        }
-        .deco-trees{
-            position:absolute;
-            bottom:0;
-            left:0;
-            right:0;
-            height:40px;
-            pointer-events:none;
-            z-index:0;
-            opacity:0.2;
-            font-size:28px;
-            display:flex;
-            justify-content:space-around;
-            padding:0 10px;
-        }
-
-        .click-float{
-            position:fixed;
-            font-weight:700;
-            font-size:28px;
-            color:#ffd700;
-            text-shadow:0 0 20px #ffa500, 0 0 40px #ff6600;
-            pointer-events:none;
-            animation:floatUp 1s ease-out forwards;
-            z-index:999;
-        }
+        .click-float{position:fixed;font-weight:700;font-size:28px;color:#ffd700;text-shadow:0 0 20px #ffa500,0 0 40px #ff6600;pointer-events:none;animation:floatUp 1s ease-out forwards;z-index:999}
         @keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-120px) scale(1.5)}}
         .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
         .toast.show{opacity:1}
         .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+        .boost-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:2000;display:none;flex-direction:column;justify-content:center;align-items:center;padding:20px}
+        .boost-overlay.active{display:flex}
+        .boost-box{background:#2d5a2d;border-radius:20px;padding:20px;max-width:360px;width:100%;border:3px solid #ffd700;text-align:center}
+        .boost-box h2{color:#ffd700;font-size:18px;margin-bottom:12px}
+        .boost-box .boost-btn{background:#1f4a1f;color:#e8f5d0;border:2px solid #4d8a4d;padding:12px;border-radius:12px;margin:6px 0;font-size:12px;font-weight:700;cursor:pointer;transition:all .12s;width:100%}
+        .boost-box .boost-btn:active{transform:scale(.95);background:#123012}
+        .boost-box .boost-btn.gold{border-color:#ffd700;color:#ffd700}
+        .boost-box .boost-btn.purple{border-color:#9a6aca;color:#f0d0ff}
+        .boost-box .boost-btn.disabled{opacity:.4;pointer-events:none}
+        .boost-box .close-btn{background:#7a3a3a;color:#fff;border:none;padding:8px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;border:2px solid #aa5a5a}
+        .boost-box .close-btn:active{transform:scale(.95)}
+        .boost-status{color:#6fcf6f;font-size:10px;margin:4px 0}
     </style>
 </head>
 <body>
-
     <div class="toast" id="toast">✅ Готово!</div>
 
+    <!-- Буст оверлей -->
+    <div class="boost-overlay" id="boostOverlay">
+        <div class="boost-box">
+            <h2>⚡ БУСТЫ</h2>
+            <div class="boost-status" id="boostStatus">Выбери буст для активации</div>
+            <button class="boost-btn gold" id="boostClick">🚀 x3 доход на 2 минуты<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span></button>
+            <button class="boost-btn purple" id="boostMiniGames">🎮 x2 доход с мини-игр на 2 минуты<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span></button>
+            <button class="close-btn" id="closeBoostBtn">🚪 Закрыть</button>
+        </div>
+    </div>
+
     <div class="game">
-        <div class="deco-clouds">
-            <span>☁️</span><span>☁️</span><span>☁️</span><span>☁️</span>
-        </div>
-        <div class="deco-trees">
-            <span>🌳</span><span>🌲</span><span>🌳</span><span>🌲</span><span>🌳</span>
-        </div>
-
         <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
-
         <div class="stats">
             <div class="stat-item">💰 <span id="money">0</span></div>
             <div class="stat-item">🌱 <span id="seeds">0</span></div>
             <div class="stat-item">⚡ <span id="cps">0</span></div>
             <div class="stat-item">👤 <span id="userName">Гость</span></div>
         </div>
-
         <div class="click-area">
             <div class="click-btn" id="clickBtn">
                 <div class="click-emoji">🧑‍🌾</div>
                 <div class="click-hint">👆 Тапай!</div>
             </div>
         </div>
-
         <div class="shop-grid" id="shopContainer"></div>
-
         <div class="actions-row">
             <button class="action-btn gold" id="prestigeBtn">✨ Перерождение</button>
             <button class="action-btn blue" id="autoClickBtn">🤖 Автокликер</button>
-            <button class="action-btn red" id="resetBtn">🔄 Сброс</button>
+            <button class="action-btn purple" id="boostBtn">⚡ Бусты</button>
         </div>
-
         <div class="footer" id="statusMsg">🌱 Сажай семена и собирай урожай!</div>
     </div>
-
     <script src="data.js"></script>
     <script>
         // ================================================================
-        //  КЛИКЕР (ОБНОВЛЁННЫЙ)
+        //  КЛИКЕР (С БУСТАМИ)
         // ================================================================
 
         let currentUser = null;
@@ -340,6 +115,10 @@
             seedInventory: {},
             clickBonus: 0,
             clickMultiplier: 1,
+            boostClickMultiplier: 1,
+            boostMiniGames: 1,
+            boostClickEnd: 0,
+            boostMiniGamesEnd: 0,
         };
 
         const SEED_NAMES = ['Помидор', 'Огурец', 'Морковь', 'Картофель', 'Лук', 'Чеснок', 'Капуста', 'Свекла',
@@ -373,7 +152,7 @@
             return Math.floor(seed.basePrice * Math.pow(3, owned));
         }
 
-        function loadUser() {
+        async function loadUser() {
             const user = getCurrentUser();
             if (!user) {
                 document.getElementById('userName').textContent = 'Гость';
@@ -383,7 +162,7 @@
             }
             currentUser = user;
             document.getElementById('userName').textContent = user;
-            const userState = getUserState(user);
+            const userState = await getUserState(user);
             if (userState) {
                 state = { ...state, ...userState };
             }
@@ -391,12 +170,27 @@
             updateUI();
             document.getElementById('statusMsg').textContent = '🌱 Добро пожаловать!';
             document.getElementById('statusMsg').className = 'footer';
+            checkBoostTimers();
             return true;
         }
 
-        function saveState() {
+        async function saveState() {
             if (currentUser) {
-                saveUserState(currentUser, state);
+                await saveUserState(currentUser, state);
+            }
+        }
+
+        function checkBoostTimers() {
+            const now = Date.now();
+            if (state.boostClickEnd && state.boostClickEnd < now) {
+                state.boostClickMultiplier = 1;
+                state.boostClickEnd = 0;
+                document.getElementById('statusMsg').textContent = '⏱️ Буст x3 закончился';
+            }
+            if (state.boostMiniGamesEnd && state.boostMiniGamesEnd < now) {
+                state.boostMiniGames = 1;
+                state.boostMiniGamesEnd = 0;
+                document.getElementById('statusMsg').textContent = '⏱️ Буст мини-игр закончился';
             }
         }
 
@@ -421,7 +215,8 @@
         function updateUI() {
             document.getElementById('money').textContent = Math.floor(state.money || 0);
             document.getElementById('seeds').textContent = state.seeds || 0;
-            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1);
+            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1) * (state
+                .boostClickMultiplier || 1);
             document.getElementById('cps').textContent = cps.toFixed(1);
             renderShop();
             saveState();
@@ -444,7 +239,7 @@
             });
         }
 
-        function buySeed(id) {
+        async function buySeed(id) {
             const seed = ALL_SEEDS[id];
             if (!seed) return;
             const price = getSeedPrice(id);
@@ -463,14 +258,16 @@
             }
             updateUI();
             showFloatingText(window.innerWidth / 2, window.innerHeight / 2, `🌱 Куплен ${seed.name}`);
+            await saveState();
         }
 
-        function clickHandler(e) {
+        async function clickHandler(e) {
             if (!currentUser) {
                 showToast('⚠️ Войди в аккаунт!', true);
                 return;
             }
-            const gain = (0.5 + (state.clickBonus || 0)) * (state.prestigeBonus || 1) * (state.clickMultiplier || 1);
+            const gain = (0.5 + (state.clickBonus || 0)) * (state.prestigeBonus || 1) * (state.clickMultiplier || 1) * (state
+                .boostClickMultiplier || 1);
             state.money += gain;
             state.totalClicks++;
             state.totalMoneyEarned += gain;
@@ -483,6 +280,7 @@
                 newAch.forEach(a => showToast(`🏆 ${a.name}!`, false));
             }
             updateUI();
+            await saveState();
         }
 
         document.getElementById('clickBtn').addEventListener('click', clickHandler);
@@ -491,7 +289,7 @@
             clickHandler(e.touches[0]);
         });
 
-        document.getElementById('autoClickBtn').addEventListener('click', () => {
+        document.getElementById('autoClickBtn').addEventListener('click', async () => {
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             const price = Math.floor(30 * Math.pow(1.5, state.autoClickers || 0));
             if (state.money < price) {
@@ -503,9 +301,10 @@
             playSound('buy');
             updateUI();
             showToast(`🤖 Автокликер куплен! (+${state.autoClickers} шт.)`, false);
+            await saveState();
         });
 
-        document.getElementById('prestigeBtn').addEventListener('click', () => {
+        document.getElementById('prestigeBtn').addEventListener('click', async () => {
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             const required = 500 * Math.pow(2, state.prestigeLevel || 0);
             if (state.totalMoneyEarned < required) {
@@ -521,12 +320,17 @@
             state.autoClickLevel = 1;
             state.clickBonus = 0;
             state.clickMultiplier = 1 + state.prestigeLevel * 0.1;
+            state.boostClickMultiplier = 1;
+            state.boostMiniGames = 1;
+            state.boostClickEnd = 0;
+            state.boostMiniGamesEnd = 0;
             playSound('prestige');
             updateUI();
             showToast(`✨ Перерождение! Бонус: x${state.prestigeBonus.toFixed(1)}`, false);
+            await saveState();
         });
 
-        document.getElementById('resetBtn').addEventListener('click', () => {
+        document.getElementById('resetBtn').addEventListener('click', async () => {
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             if (!confirm('Сбросить прогресс?')) return;
             state = {
@@ -542,16 +346,97 @@
                 seedInventory: {},
                 clickBonus: 0,
                 clickMultiplier: 1,
+                boostClickMultiplier: 1,
+                boostMiniGames: 1,
+                boostClickEnd: 0,
+                boostMiniGamesEnd: 0,
             };
             ALL_SEEDS = generateSeeds();
             updateUI();
             showToast('🔄 Прогресс сброшен!', true);
+            await saveState();
         });
 
-        // Автокликер тик
+        // ---- БУСТЫ ----
+        document.getElementById('boostBtn').addEventListener('click', () => {
+            if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            document.getElementById('boostOverlay').classList.add('active');
+            updateBoostUI();
+        });
+
+        document.getElementById('closeBoostBtn').addEventListener('click', () => {
+            document.getElementById('boostOverlay').classList.remove('active');
+        });
+
+        function updateBoostUI() {
+            const now = Date.now();
+            const clickActive = state.boostClickEnd && state.boostClickEnd > now;
+            const miniActive = state.boostMiniGamesEnd && state.boostMiniGamesEnd > now;
+            document.getElementById('boostStatus').textContent =
+                `${clickActive ? '✅ x3 активен! ' : ''}${miniActive ? '✅ x2 мини-игры активен! ' : ''}${!clickActive && !miniActive ? 'Выбери буст' : ''}`;
+            document.getElementById('boostClick').className = 'boost-btn gold' + (clickActive ? ' disabled' : '');
+            document.getElementById('boostClick').innerHTML =
+                `🚀 x3 доход на 2 минуты${clickActive ? ' ✅' : ''}<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span>`;
+            document.getElementById('boostMiniGames').className = 'boost-btn purple' + (miniActive ? ' disabled' : '');
+            document.getElementById('boostMiniGames').innerHTML =
+                `🎮 x2 доход с мини-игр на 2 минуты${miniActive ? ' ✅' : ''}<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span>`;
+        }
+
+        document.getElementById('boostClick').addEventListener('click', async () => {
+            if (state.boostClickEnd && state.boostClickEnd > Date.now()) {
+                showToast('⚠️ Буст уже активен!', true);
+                return;
+            }
+            if (state.money < 3000) {
+                showToast('⚠️ Нужно 3000💰!', true);
+                return;
+            }
+            state.money -= 3000;
+            state.boostClickMultiplier = 3;
+            state.boostClickEnd = Date.now() + 120000; // 2 минуты
+            playSound('buy');
+            showToast('🚀 x3 доход активирован на 2 минуты!', false);
+            updateUI();
+            updateBoostUI();
+            await saveState();
+            setTimeout(() => {
+                state.boostClickMultiplier = 1;
+                state.boostClickEnd = 0;
+                updateUI();
+                showToast('⏱️ Буст x3 закончился', false);
+            }, 120000);
+        });
+
+        document.getElementById('boostMiniGames').addEventListener('click', async () => {
+            if (state.boostMiniGamesEnd && state.boostMiniGamesEnd > Date.now()) {
+                showToast('⚠️ Буст уже активен!', true);
+                return;
+            }
+            if (state.money < 3000) {
+                showToast('⚠️ Нужно 3000💰!', true);
+                return;
+            }
+            state.money -= 3000;
+            state.boostMiniGames = 2;
+            state.boostMiniGamesEnd = Date.now() + 120000; // 2 минуты
+            playSound('buy');
+            showToast('🎮 x2 доход с мини-игр активирован на 2 минуты!', false);
+            updateUI();
+            updateBoostUI();
+            await saveState();
+            setTimeout(() => {
+                state.boostMiniGames = 1;
+                state.boostMiniGamesEnd = 0;
+                updateUI();
+                showToast('⏱️ Буст мини-игр закончился', false);
+            }, 120000);
+        });
+
+        // ---- АВТОКЛИКЕР ТИК ----
         setInterval(() => {
             if (!currentUser) return;
-            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1);
+            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1) * (state
+                .boostClickMultiplier || 1);
             if (cps > 0) {
                 state.money += cps / 10;
                 state.totalMoneyEarned += cps / 10;
@@ -559,10 +444,12 @@
             }
         }, 100);
 
-        setInterval(saveState, 10000);
+        setInterval(async () => {
+            await saveState();
+        }, 10000);
 
         loadUser();
-        console.log('🌱 Кликер (обновлённый) загружен!');
+        console.log('🌱 Кликер с бустами загружен!');
     </script>
 </body>
-    </html>
+                </html>
