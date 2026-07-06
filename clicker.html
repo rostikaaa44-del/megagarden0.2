@@ -36,7 +36,6 @@
         .action-btn.gold{background:rgba(255,215,0,.2);border-color:#ffd700;color:#ffd700}
         .action-btn.blue{background:rgba(74,106,154,.3);border-color:#4a6a9a;color:#f0f7ff}
         .action-btn.red{background:rgba(122,58,58,.3);border-color:#7a3a3a;color:#f0d0d0}
-        .action-btn.purple{background:rgba(154,106,202,.3);border-color:#9a6aca;color:#f0d0ff}
         .footer{color:#8aaa8a;text-align:center;font-size:7px;margin-top:4px}
         .footer.error{color:#ff6b6b}
         .footer.success{color:#6fcf6f}
@@ -45,34 +44,10 @@
         .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
         .toast.show{opacity:1}
         .toast.error{border-color:#ff6b6b;color:#ff6b6b}
-        .boost-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:2000;display:none;flex-direction:column;justify-content:center;align-items:center;padding:20px}
-        .boost-overlay.active{display:flex}
-        .boost-box{background:#2d5a2d;border-radius:20px;padding:20px;max-width:360px;width:100%;border:3px solid #ffd700;text-align:center}
-        .boost-box h2{color:#ffd700;font-size:18px;margin-bottom:12px}
-        .boost-box .boost-btn{background:#1f4a1f;color:#e8f5d0;border:2px solid #4d8a4d;padding:12px;border-radius:12px;margin:6px 0;font-size:12px;font-weight:700;cursor:pointer;transition:all .12s;width:100%}
-        .boost-box .boost-btn:active{transform:scale(.95);background:#123012}
-        .boost-box .boost-btn.gold{border-color:#ffd700;color:#ffd700}
-        .boost-box .boost-btn.purple{border-color:#9a6aca;color:#f0d0ff}
-        .boost-box .boost-btn.disabled{opacity:.4;pointer-events:none}
-        .boost-box .close-btn{background:#7a3a3a;color:#fff;border:none;padding:8px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;width:100%;border:2px solid #aa5a5a}
-        .boost-box .close-btn:active{transform:scale(.95)}
-        .boost-status{color:#6fcf6f;font-size:10px;margin:4px 0}
     </style>
 </head>
 <body>
     <div class="toast" id="toast">✅ Готово!</div>
-
-    <!-- Буст оверлей -->
-    <div class="boost-overlay" id="boostOverlay">
-        <div class="boost-box">
-            <h2>⚡ БУСТЫ</h2>
-            <div class="boost-status" id="boostStatus">Выбери буст для активации</div>
-            <button class="boost-btn gold" id="boostClick">🚀 x3 доход на 2 минуты<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span></button>
-            <button class="boost-btn purple" id="boostMiniGames">🎮 x2 доход с мини-игр на 2 минуты<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span></button>
-            <button class="close-btn" id="closeBoostBtn">🚪 Закрыть</button>
-        </div>
-    </div>
-
     <div class="game">
         <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
         <div class="stats">
@@ -91,14 +66,14 @@
         <div class="actions-row">
             <button class="action-btn gold" id="prestigeBtn">✨ Перерождение</button>
             <button class="action-btn blue" id="autoClickBtn">🤖 Автокликер</button>
-            <button class="action-btn purple" id="boostBtn">⚡ Бусты</button>
+            <button class="action-btn red" id="resetBtn">🔄 Сброс</button>
         </div>
         <div class="footer" id="statusMsg">🌱 Сажай семена и собирай урожай!</div>
     </div>
     <script src="data.js"></script>
     <script>
         // ================================================================
-        //  КЛИКЕР (С БУСТАМИ)
+        //  КЛИКЕР (ИСПРАВЛЕННЫЙ)
         // ================================================================
 
         let currentUser = null;
@@ -115,10 +90,6 @@
             seedInventory: {},
             clickBonus: 0,
             clickMultiplier: 1,
-            boostClickMultiplier: 1,
-            boostMiniGames: 1,
-            boostClickEnd: 0,
-            boostMiniGamesEnd: 0,
         };
 
         const SEED_NAMES = ['Помидор', 'Огурец', 'Морковь', 'Картофель', 'Лук', 'Чеснок', 'Капуста', 'Свекла',
@@ -152,8 +123,9 @@
             return Math.floor(seed.basePrice * Math.pow(3, owned));
         }
 
-        async function loadUser() {
+        function loadUser() {
             const user = getCurrentUser();
+            console.log('Текущий пользователь:', user);
             if (!user) {
                 document.getElementById('userName').textContent = 'Гость';
                 document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт через профиль!';
@@ -162,7 +134,8 @@
             }
             currentUser = user;
             document.getElementById('userName').textContent = user;
-            const userState = await getUserState(user);
+            const userState = getUserState(user);
+            console.log('Состояние пользователя:', userState);
             if (userState) {
                 state = { ...state, ...userState };
             }
@@ -170,27 +143,12 @@
             updateUI();
             document.getElementById('statusMsg').textContent = '🌱 Добро пожаловать!';
             document.getElementById('statusMsg').className = 'footer';
-            checkBoostTimers();
             return true;
         }
 
-        async function saveState() {
+        function saveState() {
             if (currentUser) {
-                await saveUserState(currentUser, state);
-            }
-        }
-
-        function checkBoostTimers() {
-            const now = Date.now();
-            if (state.boostClickEnd && state.boostClickEnd < now) {
-                state.boostClickMultiplier = 1;
-                state.boostClickEnd = 0;
-                document.getElementById('statusMsg').textContent = '⏱️ Буст x3 закончился';
-            }
-            if (state.boostMiniGamesEnd && state.boostMiniGamesEnd < now) {
-                state.boostMiniGames = 1;
-                state.boostMiniGamesEnd = 0;
-                document.getElementById('statusMsg').textContent = '⏱️ Буст мини-игр закончился';
+                saveUserState(currentUser, state);
             }
         }
 
@@ -215,8 +173,7 @@
         function updateUI() {
             document.getElementById('money').textContent = Math.floor(state.money || 0);
             document.getElementById('seeds').textContent = state.seeds || 0;
-            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1) * (state
-                .boostClickMultiplier || 1);
+            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1);
             document.getElementById('cps').textContent = cps.toFixed(1);
             renderShop();
             saveState();
@@ -239,7 +196,7 @@
             });
         }
 
-        async function buySeed(id) {
+        function buySeed(id) {
             const seed = ALL_SEEDS[id];
             if (!seed) return;
             const price = getSeedPrice(id);
@@ -258,16 +215,14 @@
             }
             updateUI();
             showFloatingText(window.innerWidth / 2, window.innerHeight / 2, `🌱 Куплен ${seed.name}`);
-            await saveState();
         }
 
-        async function clickHandler(e) {
+        function clickHandler(e) {
             if (!currentUser) {
                 showToast('⚠️ Войди в аккаунт!', true);
                 return;
             }
-            const gain = (0.5 + (state.clickBonus || 0)) * (state.prestigeBonus || 1) * (state.clickMultiplier || 1) * (state
-                .boostClickMultiplier || 1);
+            const gain = (0.5 + (state.clickBonus || 0)) * (state.prestigeBonus || 1) * (state.clickMultiplier || 1);
             state.money += gain;
             state.totalClicks++;
             state.totalMoneyEarned += gain;
@@ -280,7 +235,6 @@
                 newAch.forEach(a => showToast(`🏆 ${a.name}!`, false));
             }
             updateUI();
-            await saveState();
         }
 
         document.getElementById('clickBtn').addEventListener('click', clickHandler);
@@ -289,7 +243,7 @@
             clickHandler(e.touches[0]);
         });
 
-        document.getElementById('autoClickBtn').addEventListener('click', async () => {
+        document.getElementById('autoClickBtn').addEventListener('click', () => {
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             const price = Math.floor(30 * Math.pow(1.5, state.autoClickers || 0));
             if (state.money < price) {
@@ -301,10 +255,9 @@
             playSound('buy');
             updateUI();
             showToast(`🤖 Автокликер куплен! (+${state.autoClickers} шт.)`, false);
-            await saveState();
         });
 
-        document.getElementById('prestigeBtn').addEventListener('click', async () => {
+        document.getElementById('prestigeBtn').addEventListener('click', () => {
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             const required = 500 * Math.pow(2, state.prestigeLevel || 0);
             if (state.totalMoneyEarned < required) {
@@ -320,17 +273,12 @@
             state.autoClickLevel = 1;
             state.clickBonus = 0;
             state.clickMultiplier = 1 + state.prestigeLevel * 0.1;
-            state.boostClickMultiplier = 1;
-            state.boostMiniGames = 1;
-            state.boostClickEnd = 0;
-            state.boostMiniGamesEnd = 0;
             playSound('prestige');
             updateUI();
             showToast(`✨ Перерождение! Бонус: x${state.prestigeBonus.toFixed(1)}`, false);
-            await saveState();
         });
 
-        document.getElementById('resetBtn').addEventListener('click', async () => {
+        document.getElementById('resetBtn').addEventListener('click', () => {
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             if (!confirm('Сбросить прогресс?')) return;
             state = {
@@ -346,97 +294,16 @@
                 seedInventory: {},
                 clickBonus: 0,
                 clickMultiplier: 1,
-                boostClickMultiplier: 1,
-                boostMiniGames: 1,
-                boostClickEnd: 0,
-                boostMiniGamesEnd: 0,
             };
             ALL_SEEDS = generateSeeds();
             updateUI();
             showToast('🔄 Прогресс сброшен!', true);
-            await saveState();
         });
 
-        // ---- БУСТЫ ----
-        document.getElementById('boostBtn').addEventListener('click', () => {
-            if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
-            document.getElementById('boostOverlay').classList.add('active');
-            updateBoostUI();
-        });
-
-        document.getElementById('closeBoostBtn').addEventListener('click', () => {
-            document.getElementById('boostOverlay').classList.remove('active');
-        });
-
-        function updateBoostUI() {
-            const now = Date.now();
-            const clickActive = state.boostClickEnd && state.boostClickEnd > now;
-            const miniActive = state.boostMiniGamesEnd && state.boostMiniGamesEnd > now;
-            document.getElementById('boostStatus').textContent =
-                `${clickActive ? '✅ x3 активен! ' : ''}${miniActive ? '✅ x2 мини-игры активен! ' : ''}${!clickActive && !miniActive ? 'Выбери буст' : ''}`;
-            document.getElementById('boostClick').className = 'boost-btn gold' + (clickActive ? ' disabled' : '');
-            document.getElementById('boostClick').innerHTML =
-                `🚀 x3 доход на 2 минуты${clickActive ? ' ✅' : ''}<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span>`;
-            document.getElementById('boostMiniGames').className = 'boost-btn purple' + (miniActive ? ' disabled' : '');
-            document.getElementById('boostMiniGames').innerHTML =
-                `🎮 x2 доход с мини-игр на 2 минуты${miniActive ? ' ✅' : ''}<br><span style="font-size:10px;color:#8aaa8a;">3000💰</span>`;
-        }
-
-        document.getElementById('boostClick').addEventListener('click', async () => {
-            if (state.boostClickEnd && state.boostClickEnd > Date.now()) {
-                showToast('⚠️ Буст уже активен!', true);
-                return;
-            }
-            if (state.money < 3000) {
-                showToast('⚠️ Нужно 3000💰!', true);
-                return;
-            }
-            state.money -= 3000;
-            state.boostClickMultiplier = 3;
-            state.boostClickEnd = Date.now() + 120000; // 2 минуты
-            playSound('buy');
-            showToast('🚀 x3 доход активирован на 2 минуты!', false);
-            updateUI();
-            updateBoostUI();
-            await saveState();
-            setTimeout(() => {
-                state.boostClickMultiplier = 1;
-                state.boostClickEnd = 0;
-                updateUI();
-                showToast('⏱️ Буст x3 закончился', false);
-            }, 120000);
-        });
-
-        document.getElementById('boostMiniGames').addEventListener('click', async () => {
-            if (state.boostMiniGamesEnd && state.boostMiniGamesEnd > Date.now()) {
-                showToast('⚠️ Буст уже активен!', true);
-                return;
-            }
-            if (state.money < 3000) {
-                showToast('⚠️ Нужно 3000💰!', true);
-                return;
-            }
-            state.money -= 3000;
-            state.boostMiniGames = 2;
-            state.boostMiniGamesEnd = Date.now() + 120000; // 2 минуты
-            playSound('buy');
-            showToast('🎮 x2 доход с мини-игр активирован на 2 минуты!', false);
-            updateUI();
-            updateBoostUI();
-            await saveState();
-            setTimeout(() => {
-                state.boostMiniGames = 1;
-                state.boostMiniGamesEnd = 0;
-                updateUI();
-                showToast('⏱️ Буст мини-игр закончился', false);
-            }, 120000);
-        });
-
-        // ---- АВТОКЛИКЕР ТИК ----
+        // Автокликер тик
         setInterval(() => {
             if (!currentUser) return;
-            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1) * (state
-                .boostClickMultiplier || 1);
+            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1);
             if (cps > 0) {
                 state.money += cps / 10;
                 state.totalMoneyEarned += cps / 10;
@@ -444,12 +311,10 @@
             }
         }, 100);
 
-        setInterval(async () => {
-            await saveState();
-        }, 10000);
+        setInterval(saveState, 10000);
 
         loadUser();
-        console.log('🌱 Кликер с бустами загружен!');
+        console.log('🌱 Кликер загружен!');
     </script>
 </body>
-                </html>
+                                         </html>
