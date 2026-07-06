@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🐦 Flappy Bird</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:8px}
+        .game{background:#2d5a2d;border-radius:30px;padding:12px;max-width:420px;width:100%;border:3px solid #4d8a4d;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;min-height:580px}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:4px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .header{color:#ffd700;font-size:16px;font-weight:700;text-align:center}
+        .score{color:#ffd700;font-size:18px;font-weight:700;text-align:center}
+        .canvas-wrap{width:100%;max-width:360px;aspect-ratio:1/1;margin:8px auto;border:3px solid #4d8a4d;border-radius:16px;overflow:hidden;background:#87CEEB;position:relative}
+        .canvas-wrap canvas{width:100%;height:100%;display:block}
+        .footer{color:#8aaa8a;text-align:center;font-size:8px;margin-top:4px}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+        .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+        .start-msg{color:#fff;font-size:20px;font-weight:700;text-shadow:0 0 20px rgba(0,0,0,.5);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="game">
+        <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+        <div class="header">🐦 FLAPPY BIRD</div>
+        <div class="score">🏆 Очки: <span id="scoreDisplay">0</span></div>
+        <div class="canvas-wrap">
+            <canvas id="gameCanvas"></canvas>
+            <div class="start-msg" id="startMsg">👆 Нажми чтобы начать</div>
+        </div>
+        <div class="footer" id="statusMsg">🕹️ Нажимай, чтобы лететь!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // ================================================================
+        //  FLAPPY BIRD
+        // ================================================================
+
+        let currentUser = null;
+        let canvas, ctx, width, height;
+        let bird = { x: 80, y: 200, vy: 0, size: 16 };
+        let pipes = [];
+        let score = 0;
+        let running = false;
+        let gravity = 0.4;
+        let jumpPower = -7;
+        let pipeSpeed = 2.5;
+        let pipeGap = 130;
+        let pipeWidth = 30;
+        let frame = 0;
+        let gameOver = false;
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        async function loadUser() {
+            const user = getCurrentUser();
+            if (!user) {
+                document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт!';
+                document.getElementById('statusMsg').style.color = '#ff6b6b';
+                return false;
+            }
+            currentUser = user;
+            return true;
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('gameCanvas');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx = canvas.getContext('2d');
+            width = canvas.width;
+            height = canvas.height;
+            bird.y = height / 2;
+        }
+
+        function startGame() {
+            if (!loadUser()) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            bird.y = height / 2;
+            bird.vy = 0;
+            pipes = [];
+            score = 0;
+            gameOver = false;
+            running = true;
+            frame = 0;
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('startMsg').style.display = 'none';
+            document.getElementById('statusMsg').textContent = '🕹️ Нажимай, чтобы лететь!';
+            requestAnimationFrame(gameLoop);
+        }
+
+        function jump() {
+            if (!running || gameOver) return;
+            bird.vy = jumpPower;
+        }
+
+        function gameLoop() {
+            if (!running) return;
+            frame++;
+            update();
+            draw();
+            if (!gameOver) {
+                requestAnimationFrame(gameLoop);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('startMsg').style.display = 'block';
+                    document.getElementById('startMsg').textContent = '💀 Нажми чтобы начать заново';
+                    running = false;
+                }, 1000);
+            }
+        }
+
+        function update() {
+            // Гравитация
+            bird.vy += gravity;
+            bird.y += bird.vy;
+
+            // Спавн труб
+            if (frame % 90 === 0) {
+                const minY = 50;
+                const maxY = height - pipeGap - 50;
+                const pipeY = Math.random() * (maxY - minY) + minY;
+                pipes.push({ x: width, y: pipeY, scored: false });
+            }
+
+            // Движение труб
+            for (let i = pipes.length - 1; i >= 0; i--) {
+                pipes[i].x -= pipeSpeed;
+                if (pipes[i].x + pipeWidth < 0) {
+                    pipes.splice(i, 1);
+                }
+            }
+
+            // Проверка столкновений
+            const birdX = bird.x - bird.size / 2;
+            const birdY = bird.y - bird.size / 2;
+            const birdSize = bird.size;
+
+            // Границы
+            if (bird.y - bird.size / 2 < 0 || bird.y + bird.size / 2 > height) {
+                endGame();
+                return;
+            }
+
+            for (let pipe of pipes) {
+                const pipeX = pipe.x;
+                const pipeY = pipe.y;
+                // Верхняя труба
+                if (birdX < pipeX + pipeWidth && birdX + birdSize > pipeX) {
+                    if (birdY < pipeY || birdY + birdSize > pipeY + pipeGap) {
+                        endGame();
+                        return;
+                    }
+                }
+                // Счёт
+                if (!pipe.scored && pipe.x + pipeWidth < bird.x) {
+                    pipe.scored = true;
+                    score++;
+                    document.getElementById('scoreDisplay').textContent = score;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            // Небо
+            const grad = ctx.createLinearGradient(0, 0, 0, height);
+            grad.addColorStop(0, '#87CEEB');
+            grad.addColorStop(1, '#E0F0FF');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Облака
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            for (let i = 0; i < 3; i++) {
+                const cx = (i * 200 + frame * 0.2) % (width + 100) - 50;
+                ctx.beginPath();
+                ctx.arc(cx, 30 + i * 20, 25, 0, Math.PI * 2);
+                ctx.arc(cx + 25, 20 + i * 20, 30, 0, Math.PI * 2);
+                ctx.arc(cx + 50, 30 + i * 20, 25, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Трубы
+            for (let pipe of pipes) {
+                ctx.fillStyle = '#4CAF50';
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 10;
+                // Верхняя
+                ctx.fillRect(pipe.x, 0, pipeWidth, pipe.y);
+                // Нижняя
+                ctx.fillRect(pipe.x, pipe.y + pipeGap, pipeWidth, height - pipe.y - pipeGap);
+                // Крышки
+                ctx.fillStyle = '#2E7D32';
+                ctx.shadowBlur = 0;
+                ctx.fillRect(pipe.x - 4, pipe.y - 8, pipeWidth + 8, 12);
+                ctx.fillRect(pipe.x - 4, pipe.y + pipeGap - 4, pipeWidth + 8, 12);
+                ctx.shadowBlur = 0;
+            }
+
+            // Птица
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 15;
+            // Тело
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(bird.x, bird.y, bird.size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            // Крыло
+            ctx.fillStyle = '#FFA000';
+            ctx.beginPath();
+            ctx.ellipse(bird.x - 4, bird.y - 2 + Math.sin(frame * 0.2) * 3, 8, 5, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+            // Глаз
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(bird.x + 4, bird.y - 4, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(bird.x + 6, bird.y - 4, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Трава
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(0, height - 10, width, 10);
+            ctx.fillStyle = '#388E3C';
+            for (let i = 0; i < width; i += 10) {
+                ctx.fillRect(i, height - 10 - Math.sin(i * 0.5) * 4, 3, 6);
+            }
+        }
+
+        function endGame() {
+            if (gameOver) return;
+            gameOver = true;
+            running = false;
+            const reward = Math.floor(score / 2) + 1;
+            if (currentUser) {
+                const state = getUserState(currentUser);
+                if (state) {
+                    state.money = (state.money || 0) + reward;
+                    saveUserState(currentUser, state);
+                }
+            }
+            showToast(`😵 +${reward}💰 за ${score} очков!`, false);
+            document.getElementById('statusMsg').textContent = `💀 Игра окончена! +${reward}💰`;
+        }
+
+        // Управление
+        canvas = document.getElementById('gameCanvas');
+        canvas.addEventListener('click', jump);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault();
+            jump(); });
+        document.getElementById('startMsg').addEventListener('click', startGame);
+
+        initCanvas();
+        loadUser();
+        console.log('🐦 Flappy Bird загружен!');
+    </script>
+</body>
+</html>
