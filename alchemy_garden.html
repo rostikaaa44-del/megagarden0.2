@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🧙 Алхимический сад</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0f1f0f;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:8px}
+        .game{background:#2d5a2d;border-radius:30px;padding:12px;max-width:420px;width:100%;border:3px solid #9a6aca;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;min-height:580px}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:4px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .header{color:#ffd700;font-size:16px;font-weight:700;text-align:center}
+        .stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:#1f3f1f;padding:6px 10px;border-radius:16px;margin-bottom:6px;border:2px solid #4d7a4d}
+        .stat-item{color:#e8f5d0;font-weight:700;font-size:8px;text-align:center}
+        .stat-item span{color:#ffd700;font-size:13px;display:block}
+        .garden-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
+        .garden-plot{background:#1a3a1a;border-radius:12px;padding:12px;aspect-ratio:1;border:2px solid #4d8a4d;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;transition:all .15s}
+        .garden-plot:active{transform:scale(.95)}
+        .garden-plot .plant-emoji{font-size:36px}
+        .garden-plot .plant-name{color:#8aaa8a;font-size:7px;margin-top:4px;text-align:center}
+        .garden-plot .plant-progress{width:100%;height:4px;background:#2a4a2a;border-radius:4px;margin-top:4px;overflow:hidden}
+        .garden-plot .plant-progress .fill{height:100%;background:linear-gradient(90deg,#6fcf6f,#ffd700);border-radius:4px;transition:width .5s}
+        .seed-shop{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin:6px 0}
+        .seed-btn{background:#1f4a1f;color:#e8f5d0;border:2px solid #4d8a4d;padding:6px 4px;border-radius:10px;font-size:7px;cursor:pointer;transition:all .12s;text-align:center}
+        .seed-btn:active{transform:scale(.95);background:#123012}
+        .seed-btn .sprice{color:#ffd700;display:block;font-size:6px}
+        .seed-btn .semoji{font-size:20px;display:block}
+        .seed-btn.disabled{opacity:.4;pointer-events:none}
+        .footer{color:#8aaa8a;text-align:center;font-size:7px;margin-top:4px}
+        .footer.error{color:#ff6b6b}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+        .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="game">
+        <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+        <div class="header">🧙 АЛХИМИЧЕСКИЙ САД</div>
+        <div class="stats">
+            <div class="stat-item">💰 <span id="money">0</span></div>
+            <div class="stat-item">🌱 <span id="seedsCount">0</span></div>
+            <div class="stat-item">🧪 <span id="hybridsCount">0</span></div>
+        </div>
+
+        <div class="garden-grid" id="gardenGrid">
+            <div class="garden-plot" data-plot="0"><div class="plant-emoji">🟫</div><div class="plant-name">Пусто</div></div>
+            <div class="garden-plot" data-plot="1"><div class="plant-emoji">🟫</div><div class="plant-name">Пусто</div></div>
+            <div class="garden-plot" data-plot="2"><div class="plant-emoji">🟫</div><div class="plant-name">Пусто</div></div>
+            <div class="garden-plot" data-plot="3"><div class="plant-emoji">🟫</div><div class="plant-name">Пусто</div></div>
+            <div class="garden-plot" data-plot="4"><div class="plant-emoji">🟫</div><div class="plant-name">Пусто</div></div>
+            <div class="garden-plot" data-plot="5"><div class="plant-emoji">🟫</div><div class="plant-name">Пусто</div></div>
+        </div>
+
+        <div class="seed-shop" id="seedShop">
+            <button class="seed-btn" data-seed="0"><span class="semoji">🌱</span>Обычное<span class="sprice">💰 10</span></button>
+            <button class="seed-btn" data-seed="1"><span class="semoji">🌿</span>Магическое<span class="sprice">💰 30</span></button>
+            <button class="seed-btn" data-seed="2"><span class="semoji">🌺</span>Редкое<span class="sprice">💰 80</span></button>
+        </div>
+
+        <div class="footer" id="statusMsg">🧙 Сажай магические растения и собирай урожай!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        let currentUser = null;
+        let state = { garden: [{type: 'empty', progress: 0, planted: false}, {type: 'empty', progress: 0, planted: false}, {type: 'empty', progress: 0, planted: false}, {type: 'empty', progress: 0, planted: false}, {type: 'empty', progress: 0, planted: false}, {type: 'empty', progress: 0, planted: false}], seeds: 0, hybrids: 0 };
+
+        const SEEDS = [
+            { id: 0, name: 'Обычное', emoji: '🌱', price: 10, growthTime: 10, reward: 3, color: '#6fcf6f' },
+            { id: 1, name: 'Магическое', emoji: '🌿', price: 30, growthTime: 15, reward: 8, color: '#6f6fcf' },
+            { id: 2, name: 'Редкое', emoji: '🌺', price: 80, growthTime: 20, reward: 20, color: '#cf6fcf' },
+        ];
+
+        let gardenInterval = null;
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function loadUser() {
+            const user = getCurrentUser();
+            if (!user) {
+                document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт!';
+                document.getElementById('statusMsg').className = 'footer error';
+                return false;
+            }
+            currentUser = user;
+            const userState = getUserState(user);
+            if (userState) {
+                state = { ...state, ...userState.alchemy_garden };
+            }
+            updateUI();
+            return true;
+        }
+
+        function saveState() {
+            if (currentUser) {
+                const userState = getUserState(currentUser);
+                if (userState) {
+                    userState.alchemy_garden = state;
+                    saveUserState(currentUser, userState);
+                }
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('money').textContent = Math.floor(getUserState(currentUser)?.money || 0);
+            document.getElementById('seedsCount').textContent = state.seeds || 0;
+            document.getElementById('hybridsCount').textContent = state.hybrids || 0;
+
+            const plots = document.querySelectorAll('.garden-plot');
+            plots.forEach((plot, i) => {
+                const plant = state.garden[i];
+                if (!plant.planted) {
+                    plot.querySelector('.plant-emoji').textContent = '🟫';
+                    plot.querySelector('.plant-name').textContent = 'Пусто';
+                    plot.querySelector('.plant-progress')?.remove();
+                    plot.style.borderColor = '#4d8a4d';
+                    return;
+                }
+                const seed = SEEDS.find(s => s.id === plant.type);
+                if (seed) {
+                    plot.querySelector('.plant-emoji').textContent = seed.emoji;
+                    plot.querySelector('.plant-name').textContent = seed.name;
+                    let progressBar = plot.querySelector('.plant-progress');
+                    if (!progressBar) {
+                        progressBar = document.createElement('div');
+                        progressBar.className = 'plant-progress';
+                        const fill = document.createElement('div');
+                        fill.className = 'fill';
+                        progressBar.appendChild(fill);
+                        plot.appendChild(progressBar);
+                    }
+                    progressBar.querySelector('.fill').style.width = (plant.progress / seed.growthTime * 100) + '%';
+                    if (plant.progress >= seed.growthTime) {
+                        plot.style.borderColor = '#ffd700';
+                    } else {
+                        plot.style.borderColor = '#4d8a4d';
+                    }
+                }
+            });
+
+            // Магазин семян
+            document.querySelectorAll('.seed-btn').forEach(btn => {
+                const seedId = parseInt(btn.dataset.seed);
+                const price = SEEDS.find(s => s.id === seedId).price;
+                const userState = getUserState(currentUser);
+                if ((userState?.money || 0) < price) {
+                    btn.classList.add('disabled');
+                } else {
+                    btn.classList.remove('disabled');
+                }
+            });
+
+            saveState();
+        }
+
+        function plantSeed(plotIndex, seedId) {
+            if (state.garden[plotIndex].planted) {
+                showToast('⚠️ Здесь уже что-то растёт!', true);
+                return;
+            }
+            const userState = getUserState(currentUser);
+            const seed = SEEDS.find(s => s.id === seedId);
+            if ((userState?.money || 0) < seed.price) {
+                showToast('⚠️ Не хватает денег!', true);
+                return;
+            }
+            userState.money -= seed.price;
+            saveUserState(currentUser, userState);
+            state.garden[plotIndex] = { type: seedId, progress: 0, planted: true };
+            state.seeds = (state.seeds || 0) + 1;
+            updateUI();
+            showToast(`🌱 Посажено ${seed.name}!`, false);
+        }
+
+        function waterPlant(plotIndex) {
+            const plant = state.garden[plotIndex];
+            if (!plant.planted) {
+                showToast('⚠️ Здесь ничего нет!', true);
+                return;
+            }
+            const seed = SEEDS.find(s => s.id === plant.type);
+            if (plant.progress >= seed.growthTime) {
+                // Сбор урожая
+                const reward = seed.reward + Math.floor(Math.random() * 3);
+                const userState = getUserState(currentUser);
+                userState.money = (userState.money || 0) + reward;
+                saveUserState(currentUser, userState);
+                state.garden[plotIndex] = { type: 'empty', progress: 0, planted: false };
+                state.hybrids = (state.hybrids || 0) + 1;
+                updateUI();
+                showToast(`🌿 Собран урожай! +${reward}💰`, false);
+                return;
+            }
+            plant.progress = Math.min(seed.growthTime, plant.progress + 2);
+            updateUI();
+            showToast('💧 Полив!', false);
+        }
+
+        // Обработчики
+        document.querySelectorAll('.garden-plot').forEach(plot => {
+            plot.addEventListener('click', () => {
+                if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+                const index = parseInt(plot.dataset.plot);
+                const plant = state.garden[index];
+                if (!plant.planted) {
+                    // Показать выбор семян
+                    const choice = prompt('Выбери семя:\n0 - Обычное (10💰)\n1 - Магическое (30💰)\n2 - Редкое (80💰)');
+                    if (choice !== null) {
+                        const seedId = parseInt(choice);
+                        if (seedId >= 0 && seedId <= 2) {
+                            plantSeed(index, seedId);
+                        }
+                    }
+                } else {
+                    waterPlant(index);
+                }
+            });
+        });
+
+        document.querySelectorAll('.seed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+                // Найти первую свободную грядку
+                const emptyIndex = state.garden.findIndex(p => !p.planted);
+                if (emptyIndex === -1) {
+                    showToast('⚠️ Все грядки заняты!', true);
+                    return;
+                }
+                const seedId = parseInt(btn.dataset.seed);
+                plantSeed(emptyIndex, seedId);
+            });
+        });
+
+        // Автоматический рост
+        setInterval(() => {
+            if (!currentUser) return;
+            let changed = false;
+            state.garden.forEach(plant => {
+                if (plant.planted) {
+                    const seed = SEEDS.find(s => s.id === plant.type);
+                    if (plant.progress < seed.growthTime) {
+                        plant.progress += 0.3;
+                        changed = true;
+                    }
+                }
+            });
+            if (changed) {
+                updateUI();
+            }
+        }, 1000);
+
+        loadUser();
+        console.log('🧙 Алхимический сад загружен!');
+    </script>
+</body>
+</html>

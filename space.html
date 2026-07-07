@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🪐 Космический сборщик</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none}
+        body{background:#0a0a1a;min-height:100vh;display:flex;justify-content:center;align-items:center;font-family:'Segoe UI',sans-serif;padding:8px}
+        .game{background:#1a1a2e;border-radius:30px;padding:12px;max-width:420px;width:100%;border:3px solid #4a6a9a;box-shadow:0 20px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;min-height:580px}
+        .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:4px;border:2px solid #aa5a5a;width:100%}
+        .back-btn:active{transform:scale(.95)}
+        .header{color:#ffd700;font-size:16px;font-weight:700;text-align:center}
+        .score{color:#ffd700;font-size:14px;font-weight:700;text-align:center}
+        .lives{color:#ff6b6b;font-size:14px;font-weight:700;text-align:center}
+        .canvas-wrap{width:100%;max-width:360px;aspect-ratio:1/1;margin:8px auto;border:3px solid #4a6a9a;border-radius:16px;overflow:hidden;background:#0a0a2a;position:relative}
+        .canvas-wrap canvas{width:100%;height:100%;display:block}
+        .footer{color:#8aaa8a;text-align:center;font-size:8px;margin-top:4px}
+        .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+        .toast.show{opacity:1}
+        .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+        .game-over-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);border-radius:14px;display:none;flex-direction:column;justify-content:center;align-items:center;z-index:10}
+        .game-over-overlay.active{display:flex}
+        .game-over-overlay .go-text{color:#ff6b6b;font-size:32px;font-weight:700;text-shadow:0 0 40px rgba(255,0,0,.5)}
+        .game-over-overlay .go-score{color:#ffd700;font-size:18px;margin:6px 0}
+        .game-over-overlay .go-btn{background:#3a8a3a;color:#f0f7d0;border:none;padding:10px 30px;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;border:2px solid #5aaa5a}
+        .game-over-overlay .go-btn:active{transform:scale(.92)}
+    </style>
+</head>
+<body>
+    <div class="toast" id="toast">✅ Готово!</div>
+    <div class="game">
+        <button class="back-btn" onclick="location.href='index.html'">🏠 На главную</button>
+        <div class="header">🪐 КОСМИЧЕСКИЙ СБОРЩИК</div>
+        <div class="score">💎 <span id="scoreDisplay">0</span></div>
+        <div class="lives">❤️ <span id="livesDisplay">3</span></div>
+        <div class="canvas-wrap" style="position:relative;">
+            <canvas id="gameCanvas"></canvas>
+            <div class="game-over-overlay" id="gameOverOverlay">
+                <div class="go-text">💀 ИГРА ОКОНЧЕНА</div>
+                <div class="go-score" id="goScore">Собрано: 0</div>
+                <button class="go-btn" id="restartBtn">🔄 Играть снова</button>
+            </div>
+        </div>
+        <div class="footer" id="statusMsg">🕹️ Води пальцем, собирай ресурсы!</div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        let currentUser = null;
+        let canvas, ctx, width, height;
+        let player = { x: 0, y: 0, size: 25 };
+        let stars = [];
+        let asteroids = [];
+        let score = 0;
+        let lives = 3;
+        let running = false;
+        let gameOver = false;
+        let frameCount = 0;
+        let touchX = 0, touchY = 0;
+        let touchId = null;
+        let speed = 3;
+
+        function showToast(msg, isError = false) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.className = 'toast' + (isError ? ' error' : '');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2500);
+        }
+
+        function loadUser() {
+            const user = getCurrentUser();
+            if (!user) {
+                document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт!';
+                document.getElementById('statusMsg').style.color = '#ff6b6b';
+                return false;
+            }
+            currentUser = user;
+            return true;
+        }
+
+        function initCanvas() {
+            canvas = document.getElementById('gameCanvas');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            ctx = canvas.getContext('2d');
+            width = canvas.width;
+            height = canvas.height;
+            player.x = width / 2;
+            player.y = height - 60;
+        }
+
+        function startGame() {
+            if (!loadUser()) { showToast('⚠️ Войди в аккаунт!', true); return; }
+            document.getElementById('gameOverOverlay').classList.remove('active');
+            score = 0;
+            lives = 3;
+            running = true;
+            gameOver = false;
+            frameCount = 0;
+            stars = [];
+            asteroids = [];
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('livesDisplay').textContent = '3';
+            document.getElementById('statusMsg').textContent = '🪐 Собирай ресурсы!';
+            requestAnimationFrame(gameLoop);
+        }
+
+        function spawnStar() {
+            const x = Math.random() * (width - 30) + 15;
+            const y = -20;
+            const type = Math.random() < 0.3 ? 'diamond' : 'star';
+            const value = type === 'diamond' ? 5 : 1;
+            stars.push({ x, y, size: 12, type, value, speed: 1 + Math.random() * 1.5 });
+        }
+
+        function spawnAsteroid() {
+            const x = Math.random() * (width - 40) + 20;
+            const y = -30;
+            const size = 15 + Math.random() * 20;
+            asteroids.push({ x, y, size, speed: 0.8 + Math.random() * 1.5 });
+        }
+
+        function gameLoop() {
+            if (!running) return;
+            frameCount++;
+            update();
+            draw();
+            if (!gameOver) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function update() {
+            // Управление по тачу
+            if (touchX && touchY) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const targetX = (touchX - rect.left) * scaleX;
+                const targetY = (touchY - rect.top) * scaleY;
+                const dx = targetX - player.x;
+                const dy = targetY - player.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist > 2) {
+                    const moveSpeed = Math.min(speed, dist);
+                    player.x += (dx / dist) * moveSpeed;
+                    player.y += (dy / dist) * moveSpeed;
+                }
+            }
+            player.x = Math.max(player.size, Math.min(width - player.size, player.x));
+            player.y = Math.max(player.size, Math.min(height - player.size, player.y));
+
+            // Спавн звёзд
+            if (frameCount % 25 === 0) spawnStar();
+            if (frameCount % 60 === 0 && frameCount > 100) spawnAsteroid();
+
+            // Движение звёзд
+            for (let i = stars.length - 1; i >= 0; i--) {
+                const s = stars[i];
+                s.y += s.speed;
+                if (s.y > height + 20) {
+                    stars.splice(i, 1);
+                    continue;
+                }
+                // Столкновение с игроком
+                const dx = player.x - s.x;
+                const dy = player.y - s.y;
+                if (Math.sqrt(dx*dx + dy*dy) < player.size + s.size) {
+                    score += s.value;
+                    document.getElementById('scoreDisplay').textContent = score;
+                    stars.splice(i, 1);
+                }
+            }
+
+            // Движение астероидов
+            for (let i = asteroids.length - 1; i >= 0; i--) {
+                const a = asteroids[i];
+                a.y += a.speed;
+                if (a.y > height + 30) {
+                    asteroids.splice(i, 1);
+                    continue;
+                }
+                const dx = player.x - a.x;
+                const dy = player.y - a.y;
+                if (Math.sqrt(dx*dx + dy*dy) < player.size + a.size) {
+                    lives--;
+                    document.getElementById('livesDisplay').textContent = lives;
+                    asteroids.splice(i, 1);
+                    if (lives <= 0) {
+                        endGame();
+                        return;
+                    }
+                }
+            }
+
+            // Увеличение сложности
+            if (frameCount % 300 === 0) {
+                speed += 0.3;
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            // Космос
+            const grad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
+            grad.addColorStop(0, '#1a1a3e');
+            grad.addColorStop(1, '#0a0a1a');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Звёзды
+            for (let s of stars) {
+                ctx.shadowColor = s.type === 'diamond' ? '#4d96ff' : '#ffd700';
+                ctx.shadowBlur = 20;
+                if (s.type === 'diamond') {
+                    ctx.fillStyle = '#4d96ff';
+                    ctx.beginPath();
+                    ctx.moveTo(s.x, s.y - s.size);
+                    ctx.lineTo(s.x + s.size/2, s.y);
+                    ctx.lineTo(s.x, s.y + s.size);
+                    ctx.lineTo(s.x - s.size/2, s.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '10px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('💎', s.x, s.y);
+                } else {
+                    ctx.fillStyle = '#ffd700';
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.size/2, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '10px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('⭐', s.x, s.y);
+                }
+                ctx.shadowBlur = 0;
+            }
+
+            // Астероиды
+            for (let a of asteroids) {
+                ctx.shadowColor = '#ff4444';
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = '#6a4a3a';
+                ctx.beginPath();
+                ctx.arc(a.x, a.y, a.size/2, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = '#8a6a5a';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('☄️', a.x, a.y);
+                ctx.shadowBlur = 0;
+            }
+
+            // Игрок
+            ctx.shadowColor = '#4a9a4a';
+            ctx.shadowBlur = 30;
+            ctx.fillStyle = '#4a9a4a';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI*2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.font = '24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🚀', player.x, player.y);
+
+            // Рамка
+            ctx.strokeStyle = '#4a6a9a';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(2, 2, width-4, height-4);
+        }
+
+        function endGame() {
+            gameOver = true;
+            running = false;
+            const reward = Math.floor(score / 2) + 2;
+            if (currentUser) {
+                const state = getUserState(currentUser);
+                if (state) {
+                    state.money = (state.money || 0) + reward;
+                    saveUserState(currentUser, state);
+                }
+            }
+            document.getElementById('goScore').textContent = `💎 Собрано: ${score} | +${reward}💰`;
+            document.getElementById('gameOverOverlay').classList.add('active');
+            document.getElementById('statusMsg').textContent = `💀 +${reward}💰 за игру!`;
+            showToast(`☄️ +${reward}💰 за ${score} ресурсов!`, false);
+        }
+
+        // Управление
+        canvas = document.getElementById('gameCanvas');
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            touchId = touch.identifier;
+            touchX = touch.clientX;
+            touchY = touch.clientY;
+            if (!running && !gameOver) startGame();
+        });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const touch = Array.from(e.touches).find(t => t.identifier === touchId);
+            if (!touch) return;
+            touchX = touch.clientX;
+            touchY = touch.clientY;
+        });
+        canvas.addEventListener('touchend', (e) => {
+            touchId = null;
+            touchX = 0;
+            touchY = 0;
+        });
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const isOver = e.clientX >= rect.left && e.clientX <= rect.right &&
+                e.clientY >= rect.top && e.clientY <= rect.bottom;
+            if (isOver) {
+                touchX = e.clientX;
+                touchY = e.clientY;
+            }
+        });
+        canvas.addEventListener('mouseleave', () => {
+            touchX = 0;
+            touchY = 0;
+        });
+        canvas.addEventListener('click', () => {
+            if (!running && !gameOver) startGame();
+        });
+
+        document.getElementById('restartBtn').addEventListener('click', startGame);
+
+        initCanvas();
+        loadUser();
+        document.getElementById('statusMsg').textContent = '🪐 Нажми на экран, чтобы начать!';
+        console.log('🪐 Космический сборщик загружен!');
+    </script>
+</body>
+</html>
