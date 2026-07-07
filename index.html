@@ -18,6 +18,8 @@
         .game-btn:active{transform:scale(.95);background:#123012}
         .game-btn .emoji{font-size:28px;display:block;margin-bottom:4px}
         .game-btn.gold{border-color:#ffd700}
+        .game-btn.purple{border-color:#9a6aca}
+        .game-btn.blue{border-color:#6a9aca}
         .auth-btn{background:#6ab04a;color:#1e2a1e;border:none;padding:10px;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;width:100%;margin-top:8px;border:2px solid #5aaa5a}
         .auth-btn:active{transform:scale(.95)}
         .auth-btn.red{background:#7a3a3a;color:#f0d0d0;border-color:#aa5a5a}
@@ -46,6 +48,14 @@
             </div>
             <div class="game-btn" onclick="location.href='friends.html'">
                 <span class="emoji">👥</span>Друзья
+            </div>
+            <div class="game-btn purple" onclick="location.href='space.html'">
+                <span class="emoji">🪐</span>Космический сборщик
+                <span style="font-size:8px;color:#8aaa8a;display:block;">Новая игра!</span>
+            </div>
+            <div class="game-btn blue" onclick="location.href='alchemy_garden.html'">
+                <span class="emoji">🧙</span>Алхимический сад
+                <span style="font-size:8px;color:#8aaa8a;display:block;">Новая игра!</span>
             </div>
         </div>
         <button class="auth-btn" onclick="location.href='profile.html'">👤 Мой профиль</button>
@@ -99,4 +109,4 @@
         console.log('🏠 Главное меню загружено!');
     </script>
 </body>
-        </html>
+</html>
