@@ -14,6 +14,14 @@
         .stat-item span{color:#ffd700;font-size:13px;display:block}
         .back-btn{background:#7a3a3a;color:#fff;border:none;padding:6px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;margin-bottom:10px;border:2px solid #aa5a5a;width:100%}
         .back-btn:active{transform:scale(.95)}
+        .profile-header{display:flex;align-items:center;gap:12px;background:#1a3a1a;padding:12px;border-radius:14px;border:2px solid #3d6a3d;margin-bottom:8px}
+        .profile-header .avatar{font-size:48px;cursor:pointer;transition:all .15s}
+        .profile-header .avatar:active{transform:scale(.9)}
+        .profile-header .info{flex:1}
+        .profile-header .info .name{color:#ffd700;font-size:16px;font-weight:700}
+        .profile-header .info .rank{color:#8aaa8a;font-size:10px}
+        .profile-header .info .rank .rank-name{color:#ffd700}
+        .profile-header .info .date{color:#6a8a6a;font-size:8px}
         .box{background:#1a3a1a;border-radius:14px;padding:12px;border:2px solid #3d6a3d;display:flex;flex-direction:column;gap:6px}
         .row{display:flex;justify-content:space-between;align-items:center;color:#e8f5d0;font-size:10px;padding:5px 0;border-bottom:1px solid #2a4a2a}
         .row .label{color:#8aaa8a}
@@ -34,6 +42,12 @@
         .toast{position:fixed;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#ffd700;padding:6px 16px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;border:2px solid #ffd700;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
         .toast.show{opacity:1}
         .toast.error{border-color:#ff6b6b;color:#ff6b6b}
+        .avatar-options{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;justify-content:center}
+        .avatar-options .av-btn{font-size:32px;cursor:pointer;padding:4px 8px;border-radius:10px;border:2px solid transparent;transition:all .15s;background:rgba(0,0,0,.2)}
+        .avatar-options .av-btn:active{transform:scale(.9)}
+        .avatar-options .av-btn.active{border-color:#ffd700;background:rgba(255,215,0,.1)}
+        .progress-bar{width:100%;height:6px;background:#2a4a2a;border-radius:4px;overflow:hidden;margin:4px 0}
+        .progress-bar .fill{height:100%;background:linear-gradient(90deg,#6fcf6f,#ffd700);border-radius:4px;transition:width .5s}
     </style>
 </head>
 <body>
@@ -47,12 +61,31 @@
             <div class="stat-item">🏆 <span id="userPrestige">0</span></div>
         </div>
 
+        <div class="profile-header">
+            <div class="avatar" id="avatarDisplay">🧑‍🌾</div>
+            <div class="info">
+                <div class="name" id="profileNick">Гость</div>
+                <div class="rank">🏅 Ранг: <span class="rank-name" id="rankDisplay">Новичок</span></div>
+                <div class="date" id="regDate">📅 Дата регистрации: —</div>
+            </div>
+        </div>
+
         <div class="box">
-            <div class="row"><span class="label">👤 Ник</span><span class="value" id="profileNick">Гость</span></div>
-            <div class="row"><span class="label">💰 Монет</span><span class="value" id="profileMoney">0</span></div>
-            <div class="row"><span class="label">🌱 Семян</span><span class="value" id="profileSeeds">0</span></div>
-            <div class="row"><span class="label">⚡ Доход</span><span class="value" id="profileCps">0</span></div>
-            <div class="row"><span class="label">🏆 Перерождений</span><span class="value" id="profilePrestige">0</span></div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;" id="avatarOptions">
+                <div class="av-btn active" data-avatar="🧑‍🌾">🧑‍🌾</div>
+                <div class="av-btn" data-avatar="👨‍🌾">👨‍🌾</div>
+                <div class="av-btn" data-avatar="👩‍🌾">👩‍🌾</div>
+                <div class="av-btn" data-avatar="🧔">🧔</div>
+                <div class="av-btn" data-avatar="👧">👧</div>
+                <div class="av-btn" data-avatar="👨">👨</div>
+            </div>
+
+            <div class="row"><span class="label">📊 Всего кликов</span><span class="value" id="totalClicks">0</span></div>
+            <div class="row"><span class="label">💎 Всего монет</span><span class="value" id="totalMoney">0</span></div>
+            <div class="row"><span class="label">🏆 Побед в мини-играх</span><span class="value" id="totalWins">0</span></div>
+
+            <div class="row"><span class="label">📈 Прогресс до следующего ранга</span></div>
+            <div class="progress-bar"><div class="fill" id="rankProgress" style="width:0%"></div></div>
 
             <div class="toggle-row">
                 <span class="toggle-label">⚡ Режим производительности</span>
@@ -62,7 +95,12 @@
 
             <button class="btn gold" id="changeNickBtn">✏️ Сменить ник</button>
             <button class="btn gold" id="changePassBtn">🔒 Сменить пароль</button>
-            <button class="btn gold" id="loginBtn">🔑 Войти / Создать аккаунт</button>
+            <button class="btn red" id="loginBtn">🔑 Войти / Создать аккаунт</button>
+
+            <div style="margin-top:4px;">
+                <div style="color:#8aaa8a;font-size:7px;margin-bottom:2px;">🏅 Достижения</div>
+                <div class="ach-list" id="achList"></div>
+            </div>
         </div>
         <div class="footer" id="statusMsg">👤 Управляй своим профилем!</div>
     </div>
@@ -70,6 +108,16 @@
     <script>
         let currentUser = null;
         let state = {};
+        let avatar = '🧑‍🌾';
+
+        const RANKS = [
+            { name: '🌱 Новичок', min: 0, color: '#8aaa8a' },
+            { name: '🌿 Садовод', min: 50, color: '#6fcf6f' },
+            { name: '🌻 Фермер', min: 200, color: '#ffd93d' },
+            { name: '🌳 Агроном', min: 500, color: '#4d96ff' },
+            { name: '🏆 Мастер', min: 1000, color: '#9a6aca' },
+            { name: '👑 Легенда', min: 2000, color: '#ff6b6b' },
+        ];
 
         function showToast(msg, isError = false) {
             const el = document.getElementById('toast');
@@ -87,14 +135,13 @@
                 document.getElementById('profileNick').textContent = 'Гость';
                 document.getElementById('userMoney').textContent = '0';
                 document.getElementById('userPrestige').textContent = '0';
-                document.getElementById('profileMoney').textContent = '0';
-                document.getElementById('profileSeeds').textContent = '0';
-                document.getElementById('profileCps').textContent = '0';
-                document.getElementById('profilePrestige').textContent = '0';
+                document.getElementById('profileNick').textContent = 'Гость';
                 document.getElementById('statusMsg').textContent = '⚠️ Войди в аккаунт!';
                 document.getElementById('statusMsg').className = 'footer error';
                 document.getElementById('achList').innerHTML = '';
                 document.getElementById('loginBtn').textContent = '🔑 Войти / Создать аккаунт';
+                document.getElementById('rankDisplay').textContent = '—';
+                document.getElementById('regDate').textContent = '📅 Дата регистрации: —';
                 return false;
             }
             currentUser = user;
@@ -104,22 +151,58 @@
             document.getElementById('profileNick').textContent = user;
             document.getElementById('userMoney').textContent = Math.floor(state.money || 0);
             document.getElementById('userPrestige').textContent = state.prestigeLevel || 0;
-            document.getElementById('profileMoney').textContent = Math.floor(state.money || 0);
-            document.getElementById('profileSeeds').textContent = state.seeds || 0;
-            const cps = (state.autoClickers || 0) * 0.5 * (state.autoClickLevel || 1) * (state.prestigeBonus || 1);
-            document.getElementById('profileCps').textContent = cps.toFixed(1);
-            document.getElementById('profilePrestige').textContent = state.prestigeLevel || 0;
+            document.getElementById('loginBtn').textContent = '🚪 Выйти';
             document.getElementById('statusMsg').textContent = `👋 Привет, ${user}!`;
             document.getElementById('statusMsg').className = 'footer';
-            document.getElementById('loginBtn').textContent = '🚪 Выйти';
 
+            // Аватар
+            avatar = state.avatar || '🧑‍🌾';
+            document.getElementById('avatarDisplay').textContent = avatar;
+            document.querySelectorAll('.av-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.avatar === avatar);
+            });
+
+            // Ранг
+            const totalMoney = state.totalMoneyEarned || 0;
+            let currentRank = RANKS[0];
+            let nextRank = RANKS[1];
+            for (let i = RANKS.length - 1; i >= 0; i--) {
+                if (totalMoney >= RANKS[i].min) {
+                    currentRank = RANKS[i];
+                    nextRank = RANKS[Math.min(i + 1, RANKS.length - 1)];
+                    break;
+                }
+            }
+            document.getElementById('rankDisplay').textContent = currentRank.name;
+            document.getElementById('rankDisplay').style.color = currentRank.color;
+
+            const progress = nextRank ? Math.min(100, (totalMoney - currentRank.min) / (nextRank.min - currentRank.min) * 100) : 100;
+            document.getElementById('rankProgress').style.width = progress + '%';
+
+            // Регистрация
+            document.getElementById('regDate').textContent = `📅 Дата регистрации: ${state.regDate || 'Неизвестно'}`;
+
+            // Статистика
+            document.getElementById('totalClicks').textContent = state.totalClicks || 0;
+            document.getElementById('totalMoney').textContent = Math.floor(state.totalMoneyEarned || 0);
+            document.getElementById('totalWins').textContent = (state.coolkidWins || 0) + (state.matchRecord > 0 ? 1 : 0);
+
+            // Достижения
             const list = document.getElementById('achList');
             list.innerHTML = '';
-            const allAch = ['Первый клик', '100 кликов', '1000 кликов', '100 монет', '1000 монет', '10000 монет', '10 семян', '30 семян', '1 перерождение', '5 перерождений', '5 автокликеров', '10 автокликеров', 'Победа в три в ряд', 'Побег от Cool Kid'];
+            const achievements = state.achievements || [];
+            const allAch = [
+                'Первый клик', '100 кликов', '1000 кликов',
+                '100 монет', '1000 монет', '10000 монет',
+                '10 семян', '30 семян',
+                '1 перерождение', '5 перерождений',
+                '5 автокликеров', '10 автокликеров',
+                'Победа в три в ряд', 'Побег от Cool Kid'
+            ];
             allAch.forEach(name => {
                 const div = document.createElement('div');
-                div.className = 'ach-item' + ((state.achievements || []).includes(name) ? ' done' : '');
-                div.textContent = `${(state.achievements || []).includes(name) ? '✅' : '⬜'} ${name}`;
+                div.className = 'ach-item' + (achievements.includes(name) ? ' done' : '');
+                div.textContent = `${achievements.includes(name) ? '✅' : '⬜'} ${name}`;
                 list.appendChild(div);
             });
 
@@ -131,6 +214,7 @@
 
         function saveState() {
             if (currentUser) {
+                state.avatar = avatar;
                 saveUserState(currentUser, state);
             }
         }
@@ -140,12 +224,26 @@
             state.prefMode = parseInt(this.value) === 1;
             document.getElementById('perfStatus').textContent = state.prefMode ? 'ВКЛ' : 'ВЫКЛ';
             saveState();
+            showToast(`⚡ Режим ${state.prefMode ? 'включён' : 'выключен'}`, false);
+        });
+
+        document.querySelectorAll('.av-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
+                avatar = this.dataset.avatar;
+                document.getElementById('avatarDisplay').textContent = avatar;
+                document.querySelectorAll('.av-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                saveState();
+                showToast('✅ Аватар изменён!', false);
+            });
         });
 
         document.getElementById('changeNickBtn').addEventListener('click', () => {
             if (!currentUser) { showToast('⚠️ Войди в аккаунт!', true); return; }
             const newNick = prompt('Введите новый ник:', currentUser);
             if (!newNick || newNick.trim() === '') return;
+            if (newNick.trim() === currentUser) { showToast('⚠️ Это тот же ник', true); return; }
             const users = getUsers();
             if (users[newNick.trim()]) { showToast('❌ Это имя уже занято!', true); return; }
             users[newNick.trim()] = { ...users[currentUser] };
@@ -197,6 +295,11 @@
                 const result = createAccount(login, pass);
                 if (result.success) {
                     setCurrentUser(login);
+                    const userState = getUserState(login);
+                    if (userState) {
+                        userState.regDate = new Date().toLocaleDateString();
+                        saveUserState(login, userState);
+                    }
                     loadUser();
                     showToast('✅ Аккаунт создан!', false);
                 } else {
@@ -206,7 +309,7 @@
         });
 
         loadUser();
-        console.log('👤 Профиль загружен!');
+        console.log('👤 Профиль (обновлённый) загружен!');
     </script>
 </body>
-                </html>
+    </html>
